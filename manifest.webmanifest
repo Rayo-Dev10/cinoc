@@ -1,0 +1,9 @@
+{
+  "name": "Avance IES",
+  "short_name": "Avance IES",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7ff",
+  "theme_color": "#1d4ed8",
+  "icons": []
+}

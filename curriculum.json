@@ -1,0 +1,328 @@
+{
+  "schema_version": "0.4",
+  "source_documents": [
+    {
+      "program_id": "CONTADURIA_PUBLICA",
+      "plan_name_in_source": "Tecnología en Gestión Contable y Tributaria",
+      "source_file": "MALLA PROGRAMA CONTABLE PRERREQUISITOS Y CORREQUISITOS.pdf",
+      "plan_version": "2025-01"
+    },
+    {
+      "program_id": "ADMINISTRACION_EMPRESAS",
+      "plan_name_in_source": "Tecnología en Gestión de Empresas",
+      "source_file": "MALLA PROGRAMA EMPRESAS PRERREQUISITOS Y CORREQUISITOS.pdf",
+      "plan_version": "2025-01"
+    }
+  ],
+  "programs": {
+    "ADMINISTRACION_EMPRESAS": { "display_name": "Administración de Empresas" },
+    "CONTADURIA_PUBLICA": { "display_name": "Contaduría Pública" }
+  },
+  "canonicalization": {
+    "strip_accents": true,
+    "lowercase": true,
+    "collapse_whitespace": true,
+    "trim": true,
+    "known_aliases": {
+      "matematica": "matematicas",
+      "inlges ii": "ingles ii",
+      "ingles i": "inglés i",
+      "ingles ii": "inglés ii",
+      "ingles iii": "inglés iii",
+      "ingles iv": "inglés iv",
+      "princpios de contabildiad": "principios de contabilidad",
+      "principios deEconomía": "principios de economía",
+      "psicolgía en las organizaciones": "psicología en las organizaciones",
+      "emprenderísmo": "emprenderismo",
+      "iva, retefuente e ica": "iva y retención en la fuente"
+    }
+  },
+  "course_catalog": {
+    "MATEMATICAS": { "code": "MAT-101", "name": "Matemáticas", "aliases": ["Matemática"] },
+    "ESTADISTICA": { "code": "EST-102", "name": "Estadística", "aliases": [] },
+
+    "PRINCIPIOS_DE_ECONOMIA": { "code": "ECO-101", "name": "Principios de Economía", "aliases": ["Principios deEconomía"] },
+    "ECONOMIA_DE_EMPRESAS": { "code": "ECO-201", "name": "Economía de Empresas", "aliases": [] },
+
+    "PRINCIPIOS_DE_ADMINISTRACION": { "code": "ADM-101", "name": "Principios de Administración", "aliases": [] },
+    "ORGANIZACION_DE_EMPRESAS": { "code": "ORG-201", "name": "Organización de Empresas", "aliases": [] },
+
+    "PRINCIPIOS_DE_CONTABILIDAD": { "code": "CON-101", "name": "Principios de Contabilidad", "aliases": ["Princpios de Contabildiad"] },
+    "CONTABILIDAD_GENERAL": { "code": "CON-201", "name": "Contabilidad General", "aliases": [] },
+
+    "COSTOS": { "code": "COS-201", "name": "Costos", "aliases": [] },
+    "COSTOS_POR_ORDENES_DE_PRODUCCION": { "code": "COS-211", "name": "Costos por Órdenes de Producción", "aliases": [] },
+    "COSTOS_POR_PROCESOS": { "code": "COS-212", "name": "Costos por Procesos", "aliases": [] },
+
+    "MATEMATICA_FINANCIERA": { "code": "FIN-201", "name": "Matemática Financiera", "aliases": [] },
+    "PRESUPUESTOS_PRIVADOS": { "code": "FIN-301", "name": "Presupuestos Privados", "aliases": [] },
+    "ANALISIS_FINANCIERO": { "code": "FIN-401", "name": "Análisis Financiero", "aliases": [] },
+
+    "LEGISLACION_COMERCIAL_Y_LABORAL": { "code": "LAW-301", "name": "Legislación Comercial y Laboral", "aliases": [] },
+    "TALENTO_HUMANO": { "code": "HR-301", "name": "Talento Humano", "aliases": [] },
+
+    "SISTEMAS": { "code": "SIS-201", "name": "Sistemas", "aliases": [] },
+    "SISTEMAS_APLICADOS": { "code": "SIS-301", "name": "Sistemas Aplicados", "aliases": [] },
+    "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES": { "code": "SIS-302", "name": "Software y Contabilización de Soportes", "aliases": [] },
+
+    "IVA_Y_RETENCION_EN_LA_FUENTE": { "code": "TAX-401", "name": "IVA y Retención en la Fuente", "aliases": ["IVA, Retefuente e ICA"] },
+    "IMPUESTO_RENTA_Y_COMPLEMENTARIOS": { "code": "TAX-501", "name": "Impuesto Renta y Complementarios", "aliases": [] },
+    "PROCEDIMIENTO_TRIBUTARIO": { "code": "TAX-502", "name": "Procedimiento Tributario", "aliases": [] },
+    "GESTION_TRIBUTARIA": { "code": "TAX-601", "name": "Gestión Tributaria", "aliases": [] },
+
+    "CICLO_CONTABLE_I": { "code": "ACC-501", "name": "Ciclo Contable I", "aliases": [] },
+    "CICLO_CONTABLE_II_E_IMPUESTOS_TERRITORIALES": { "code": "ACC-502", "name": "Ciclo Contable II e Impuestos Territoriales", "aliases": [] },
+    "CONTABILIDAD_PATRIMONIAL": { "code": "ACC-301", "name": "Contabilidad Patrimonial", "aliases": [] },
+    "CONTABILIDAD_PUBLICA": { "code": "ACC-601", "name": "Contabilidad Pública", "aliases": [] },
+    "AUDITORIA": { "code": "AUD-401", "name": "Auditoría", "aliases": [] },
+
+    "PRINCIPIOS_DE_INVESTIGACION": { "code": "RES-101", "name": "Principios de Investigación", "aliases": [] },
+    "METODOLOGIA_DE_LA_INVESTIGACION": { "code": "RES-201", "name": "Metodología de la Investigación", "aliases": [] },
+
+    "TECNICAS_DE_EXPRESION_ORAL_Y_ESCRITA": { "code": "COM-101", "name": "Técnicas de Expresión Oral y Escrita", "aliases": [] },
+    "CONSTITUCION_POLITICA_Y_ETICA": { "code": "CIV-101", "name": "Constitución Política y Ética", "aliases": [] },
+
+    "INGLES_I": { "code": "ENG-101", "name": "Inglés I", "aliases": ["Ingles I"] },
+    "INGLES_II": { "code": "ENG-102", "name": "Inglés II", "aliases": ["Inlges II", "Ingles II"] },
+    "INGLES_III": { "code": "ENG-103", "name": "Inglés III", "aliases": ["Ingles III"] },
+    "INGLES_IV": { "code": "ENG-104", "name": "Inglés IV", "aliases": ["Ingles IV"] },
+
+    "ADMINISTRACION_DE_LA_PRODUCCION": { "code": "PROD-301", "name": "Administración de la Producción", "aliases": [] },
+    "FUNDAMENTOS_DE_MERCADEO": { "code": "MKT-301", "name": "Fundamentos de Mercadeo", "aliases": [] },
+    "INVESTIGACION_DE_MERCADOS": { "code": "MKT-401", "name": "Investigación de Mercados", "aliases": [] },
+    "PSICOLOGIA_EN_LAS_ORGANIZACIONES": { "code": "PSY-401", "name": "Psicología en las Organizaciones", "aliases": ["Psicolgía en las Organizaciones"] },
+
+    "DIRECCION_Y_CONTROL": { "code": "MGT-401", "name": "Dirección y Control", "aliases": [] },
+    "ENFOQUE_GERENCIAL": { "code": "MGT-601", "name": "Enfoque Gerencial", "aliases": [] },
+    "PLANEACION_ESTRATEGICA": { "code": "STR-601", "name": "Planeación Estratégica", "aliases": [] },
+
+    "FORMULACION_Y_EVALUACION_DE_PROYECTOS": { "code": "PROJ-601", "name": "Formulación y Evaluación de Proyectos", "aliases": [] },
+    "EVALUACION_FINANCIERA_DE_PROYECTOS": { "code": "PROJ-502", "name": "Evaluación Financiera de Proyectos", "aliases": [] },
+
+    "INTRODUCCION_A_LAS_CIENCIAS_SOCIALES": { "code": "SOC-101", "name": "Introducción a las Ciencias Sociales", "aliases": [] },
+    "CONTEXTO_REGIONAL": { "code": "CTX-201", "name": "Contexto Regional", "aliases": [] },
+
+    "EMPRENDERISMO": { "code": "ENT-301", "name": "Emprenderismo", "aliases": ["Emprenderísmo"] },
+    "EMPRENDIMIENTO": { "code": "ENT-401", "name": "Emprendimiento", "aliases": [] },
+
+    "ELECTIVA_SLOT_CONT_1": { "code": "ELEC-CONT-1", "name": "Electiva I (slot)", "type": "elective_slot" },
+    "ELECTIVA_SLOT_CONT_2": { "code": "ELEC-CONT-2", "name": "Electiva II (slot)", "type": "elective_slot" },
+    "ELECTIVA_SLOT_CONT_3": { "code": "ELEC-CONT-3", "name": "Electiva III (slot)", "type": "elective_slot" },
+
+    "ELECTIVA_SLOT_ADM_1": { "code": "ELEC-ADM-1", "name": "Electiva (slot) - Sem I", "type": "elective_slot" },
+    "ELECTIVA_SLOT_ADM_2": { "code": "ELEC-ADM-2", "name": "Electiva (slot) - Sem IV", "type": "elective_slot" },
+    "ELECTIVA_SLOT_ADM_3": { "code": "ELEC-ADM-3", "name": "Electiva (slot) - Sem VI", "type": "elective_slot" }
+  },
+
+  "program_plans": {
+    "CONTADURIA_PUBLICA": {
+      "total_credits": 107,
+      "semesters": {
+        "1": [
+          { "course_id": "MATEMATICAS", "credits": 3 },
+          { "course_id": "PRINCIPIOS_DE_ECONOMIA", "credits": 3 },
+          { "course_id": "PRINCIPIOS_DE_ADMINISTRACION", "credits": 2 },
+          { "course_id": "CONSTITUCION_POLITICA_Y_ETICA", "credits": 2 },
+          { "course_id": "PRINCIPIOS_DE_CONTABILIDAD", "credits": 4 },
+          { "course_id": "TECNICAS_DE_EXPRESION_ORAL_Y_ESCRITA", "credits": 2 },
+          { "course_id": "PRINCIPIOS_DE_INVESTIGACION", "credits": 2 }
+        ],
+        "2": [
+          { "course_id": "ESTADISTICA", "credits": 2 },
+          { "course_id": "COSTOS_POR_ORDENES_DE_PRODUCCION", "credits": 3 },
+          { "course_id": "ORGANIZACION_DE_EMPRESAS", "credits": 4 },
+          { "course_id": "CONTABILIDAD_GENERAL", "credits": 6 },
+          { "course_id": "ELECTIVA_SLOT_CONT_1", "credits": 2 }
+        ],
+        "3": [
+          { "course_id": "COSTOS_POR_PROCESOS", "credits": 3 },
+          { "course_id": "MATEMATICA_FINANCIERA", "credits": 3 },
+          { "course_id": "LEGISLACION_COMERCIAL_Y_LABORAL", "credits": 3 },
+          { "course_id": "EMPRENDERISMO", "credits": 2 },
+          { "course_id": "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES", "credits": 3 },
+          { "course_id": "INGLES_I", "credits": 2 },
+          { "course_id": "METODOLOGIA_DE_LA_INVESTIGACION", "credits": 2 }
+        ],
+        "4": [
+          { "course_id": "PRESUPUESTOS_PRIVADOS", "credits": 4 },
+          { "course_id": "IVA_Y_RETENCION_EN_LA_FUENTE", "credits": 4 },
+          { "course_id": "TALENTO_HUMANO", "credits": 3 },
+          { "course_id": "CONTABILIDAD_PATRIMONIAL", "credits": 2 },
+          { "course_id": "SISTEMAS_APLICADOS", "credits": 3 },
+          { "course_id": "INGLES_II", "credits": 2 }
+        ],
+        "5": [
+          { "course_id": "ANALISIS_FINANCIERO", "credits": 3 },
+          { "course_id": "AUDITORIA", "credits": 4 },
+          { "course_id": "IMPUESTO_RENTA_Y_COMPLEMENTARIOS", "credits": 4 },
+          { "course_id": "CICLO_CONTABLE_I", "credits": 3 },
+          { "course_id": "ELECTIVA_SLOT_CONT_2", "credits": 2 },
+          { "course_id": "INGLES_III", "credits": 2 }
+        ],
+        "6": [
+          { "course_id": "CONTABILIDAD_PUBLICA", "credits": 3 },
+          { "course_id": "EVALUACION_FINANCIERA_DE_PROYECTOS", "credits": 3 },
+          { "course_id": "PROCEDIMIENTO_TRIBUTARIO", "credits": 4 },
+          { "course_id": "CICLO_CONTABLE_II_E_IMPUESTOS_TERRITORIALES", "credits": 4 },
+          { "course_id": "ELECTIVA_SLOT_CONT_3", "credits": 2 },
+          { "course_id": "INGLES_IV", "credits": 2 }
+        ]
+      }
+    },
+
+    "ADMINISTRACION_EMPRESAS": {
+      "total_credits": 105,
+      "semesters": {
+        "1": [
+          { "course_id": "MATEMATICAS", "credits": 3 },
+          { "course_id": "PRINCIPIOS_DE_ECONOMIA", "credits": 3 },
+          { "course_id": "PRINCIPIOS_DE_CONTABILIDAD", "credits": 4 },
+          { "course_id": "PRINCIPIOS_DE_ADMINISTRACION", "credits": 4 },
+          { "course_id": "TECNICAS_DE_EXPRESION_ORAL_Y_ESCRITA", "credits": 2 },
+          { "course_id": "ELECTIVA_SLOT_ADM_1", "credits": 2 }
+        ],
+        "2": [
+          { "course_id": "ESTADISTICA", "credits": 2 },
+          { "course_id": "INTRODUCCION_A_LAS_CIENCIAS_SOCIALES", "credits": 2 },
+          { "course_id": "ECONOMIA_DE_EMPRESAS", "credits": 2 },
+          { "course_id": "COSTOS", "credits": 3 },
+          { "course_id": "ORGANIZACION_DE_EMPRESAS", "credits": 4 },
+          { "course_id": "SISTEMAS", "credits": 3 },
+          { "course_id": "CONTEXTO_REGIONAL", "credits": 2 }
+        ],
+        "3": [
+          { "course_id": "MATEMATICA_FINANCIERA", "credits": 3 },
+          { "course_id": "LEGISLACION_COMERCIAL_Y_LABORAL", "credits": 3 },
+          { "course_id": "ADMINISTRACION_DE_LA_PRODUCCION", "credits": 3 },
+          { "course_id": "FUNDAMENTOS_DE_MERCADEO", "credits": 3 },
+          { "course_id": "INGLES_I", "credits": 2 },
+          { "course_id": "CONSTITUCION_POLITICA_Y_ETICA", "credits": 2 }
+        ],
+        "4": [
+          { "course_id": "EMPRENDERISMO", "credits": 3 },
+          { "course_id": "TALENTO_HUMANO", "credits": 3 },
+          { "course_id": "SISTEMAS_APLICADOS", "credits": 3 },
+          { "course_id": "PRESUPUESTOS_PRIVADOS", "credits": 4 },
+          { "course_id": "INGLES_II", "credits": 2 },
+          { "course_id": "ELECTIVA_SLOT_ADM_2", "credits": 3 }
+        ],
+        "5": [
+          { "course_id": "ANALISIS_FINANCIERO", "credits": 3 },
+          { "course_id": "DIRECCION_Y_CONTROL", "credits": 4 },
+          { "course_id": "EMPRENDIMIENTO", "credits": 3 },
+          { "course_id": "INVESTIGACION_DE_MERCADOS", "credits": 3 },
+          { "course_id": "PSICOLOGIA_EN_LAS_ORGANIZACIONES", "credits": 3 },
+          { "course_id": "INGLES_III", "credits": 2 }
+        ],
+        "6": [
+          { "course_id": "FORMULACION_Y_EVALUACION_DE_PROYECTOS", "credits": 4 },
+          { "course_id": "ENFOQUE_GERENCIAL", "credits": 3 },
+          { "course_id": "PLANEACION_ESTRATEGICA", "credits": 3 },
+          { "course_id": "GESTION_TRIBUTARIA", "credits": 3 },
+          { "course_id": "INGLES_IV", "credits": 2 },
+          { "course_id": "ELECTIVA_SLOT_ADM_3", "credits": 2 }
+        ]
+      }
+    }
+  },
+
+  "program_requisites": {
+    "CONTADURIA_PUBLICA": {
+      "type_legend": { "prereq": "Prerrequisito" },
+      "rules": [
+        { "target": "ESTADISTICA", "prereq": { "allOf": ["MATEMATICAS"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "COSTOS_POR_ORDENES_DE_PRODUCCION", "prereq": { "allOf": ["PRINCIPIOS_DE_CONTABILIDAD"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "COSTOS_POR_PROCESOS", "prereq": { "allOf": ["COSTOS_POR_ORDENES_DE_PRODUCCION"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "ORGANIZACION_DE_EMPRESAS", "prereq": { "allOf": ["PRINCIPIOS_DE_ADMINISTRACION"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "CONTABILIDAD_GENERAL", "prereq": { "allOf": ["PRINCIPIOS_DE_CONTABILIDAD"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES", "prereq": { "allOf": ["CONTABILIDAD_GENERAL"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "CONTABILIDAD_PATRIMONIAL", "prereq": { "allOf": ["SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "CICLO_CONTABLE_I", "prereq": { "allOf": ["CONTABILIDAD_PATRIMONIAL"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "CICLO_CONTABLE_II_E_IMPUESTOS_TERRITORIALES", "prereq": { "allOf": ["CICLO_CONTABLE_I"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "IVA_Y_RETENCION_EN_LA_FUENTE", "prereq": { "allOf": ["MATEMATICA_FINANCIERA"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "ANALISIS_FINANCIERO", "prereq": { "allOf": ["IVA_Y_RETENCION_EN_LA_FUENTE"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "IMPUESTO_RENTA_Y_COMPLEMENTARIOS", "prereq": { "allOf": ["IVA_Y_RETENCION_EN_LA_FUENTE"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "PROCEDIMIENTO_TRIBUTARIO", "prereq": { "allOf": ["IMPUESTO_RENTA_Y_COMPLEMENTARIOS"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "EVALUACION_FINANCIERA_DE_PROYECTOS", "prereq": { "allOf": ["ANALISIS_FINANCIERO"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "METODOLOGIA_DE_LA_INVESTIGACION", "prereq": { "allOf": ["PRINCIPIOS_DE_INVESTIGACION"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "INGLES_II", "prereq": { "allOf": ["INGLES_I"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "INGLES_III", "prereq": { "allOf": ["INGLES_II"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "INGLES_IV", "prereq": { "allOf": ["INGLES_III"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } }
+      ]
+    },
+
+    "ADMINISTRACION_EMPRESAS": {
+      "type_legend": { "prereq": "Prerrequisito", "coreq": "Correquisito" },
+      "rules": [
+        { "target": "ESTADISTICA", "prereq": { "allOf": ["MATEMATICAS"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "MATEMATICA_FINANCIERA", "prereq": { "allOf": ["ESTADISTICA"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "ECONOMIA_DE_EMPRESAS", "prereq": { "allOf": ["PRINCIPIOS_DE_ECONOMIA"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "COSTOS", "prereq": { "allOf": ["PRINCIPIOS_DE_CONTABILIDAD"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+        { "target": "ORGANIZACION_DE_EMPRESAS", "prereq": { "allOf": ["PRINCIPIOS_DE_ADMINISTRACION"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        {
+          "target": "ADMINISTRACION_DE_LA_PRODUCCION",
+          "prereq": { "allOf": ["COSTOS", "ORGANIZACION_DE_EMPRESAS"], "anyOf": [] },
+          "coreq": { "allOf": [], "anyOf": [] }
+        },
+
+        { "target": "TALENTO_HUMANO", "prereq": { "allOf": ["LEGISLACION_COMERCIAL_Y_LABORAL"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        {
+          "target": "SISTEMAS_APLICADOS",
+          "prereq": { "allOf": ["MATEMATICA_FINANCIERA", "ADMINISTRACION_DE_LA_PRODUCCION", "SISTEMAS"], "anyOf": [] },
+          "coreq": { "allOf": ["PRESUPUESTOS_PRIVADOS"], "anyOf": [] },
+          "review_flags": ["confirmar_si_SISTEMAS_es_prerrequisito_en_diagrama"]
+        },
+
+        { "target": "PRESUPUESTOS_PRIVADOS", "prereq": { "allOf": ["ADMINISTRACION_DE_LA_PRODUCCION"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        { "target": "INGLES_II", "prereq": { "allOf": ["INGLES_I"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        {
+          "target": "INGLES_III",
+          "prereq": { "allOf": ["INGLES_II"], "anyOf": [] },
+          "coreq": { "allOf": [], "anyOf": [] },
+          "review_flags": ["en_el_diagrama_no_se_aprecia_flecha_ENG-102_a_ENG-103; posible_omision"]
+        },
+
+        { "target": "INGLES_IV", "prereq": { "allOf": ["INGLES_III"], "anyOf": [] }, "coreq": { "allOf": [], "anyOf": [] } },
+
+        {
+          "target": "ENFOQUE_GERENCIAL",
+          "prereq": { "allOf": ["DIRECCION_Y_CONTROL", "INVESTIGACION_DE_MERCADOS", "PSICOLOGIA_EN_LAS_ORGANIZACIONES"], "anyOf": [] },
+          "coreq": { "allOf": ["PLANEACION_ESTRATEGICA"], "anyOf": [] }
+        },
+
+        {
+          "target": "FORMULACION_Y_EVALUACION_DE_PROYECTOS",
+          "prereq": { "allOf": ["ANALISIS_FINANCIERO", "INVESTIGACION_DE_MERCADOS", "PSICOLOGIA_EN_LAS_ORGANIZACIONES"], "anyOf": [] },
+          "coreq": { "allOf": [], "anyOf": [] }
+        }
+      ]
+    }
+  },
+
+  "electives_logic_recommendation": {
+    "strategy": "elective_slots",
+    "how_it_works": [
+      "Cada 'elective_slot' es un requisito de créditos (y opcionalmente área) dentro del plan.",
+      "Cuando el estudiante elige una electiva real, se crea/selecciona un curso real del catálogo y se 'mapea' a ese slot.",
+      "Progreso: el slot cuenta como completado cuando la electiva real asociada queda APROBADA y cumple créditos/área."
+    ],
+    "important": [
+      "No intentes unificar electivas entre programas si solo vienen como 'Electiva' sin nombre.",
+      "Trátalas como 'requisito de selección' y no como una materia canónica compartida."
+    ]
+  }
+}

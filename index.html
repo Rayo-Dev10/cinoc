@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#1d4ed8" />
+
+  <title>Avance IES</title>
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar__title">
+      <h1>Avance IES</h1>
+      <p class="kpiSmall">Monitor de materias y progreso</p>
+    </div>
+
+    <div class="topbar__actions">
+      <input id="searchInput" class="search" type="text" placeholder="Buscar materia..." />
+
+      <div class="segmented" role="tablist" aria-label="Filtro de materias">
+        <button class="segmented__btn is-active" data-filter="all">Todas</button>
+        <button class="segmented__btn" data-filter="mandatory">Obligatorias</button>
+        <button class="segmented__btn" data-filter="elective">Electivas</button>
+      </div>
+
+      <div class="themeSwitch">
+        <span>Claro/Oscuro</span>
+        <input id="themeToggle" type="checkbox" aria-label="Cambiar tema" />
+      </div>
+
+      <div class="btnrow">
+        <button id="exportBtn" class="btn btn--ghost">Exportar</button>
+        <label class="btn btn--ghost" style="display:inline-flex; gap:8px; align-items:center; cursor:pointer;">
+          Importar
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+        </label>
+        <button id="resetBtn" class="btn btn--danger">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section__head">
+        <h2>Avance</h2>
+      </div>
+      <div id="stats" class="stats"></div>
+    </section>
+
+    <section class="section">
+      <div class="section__head">
+        <h2>Semestres</h2>
+      </div>
+
+      <div class="boardHead">
+        <div class="boardHead__col">Administración</div>
+        <div class="boardHead__col">En Común</div>
+        <div class="boardHead__col">Contaduría</div>
+      </div>
+
+      <div id="semesterBoard" class="semesterBoard"></div>
+    </section>
+  </main>
+
+  <dialog id="courseModal" class="modal">
+    <div class="modal__card">
+      <div class="modal__head">
+        <div>
+          <h3 id="modalTitle"></h3>
+          <p id="modalSubtitle" class="kpiSmall"></p>
+        </div>
+        <button id="modalClose" class="iconbtn" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div id="modalBody" class="modal__body"></div>
+      <div class="modal__foot">
+        <button id="modalOk" class="btn">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.54.1/apexcharts.min.js"></script>
+
+  <!-- App (ES Module) -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
