@@ -2,6 +2,7 @@ import { PROGRAMS } from "../core/derived.js";
 import { computeGate, isSatisfied, buildLockLabel } from "../core/gating.js";
 import { getCreditsDisplay, getCreditsValueForUI } from "../core/placement.js";
 import { escapeHTML } from "../utils/dom.js";
+import { getCourseName, getCourseAlias, getCourseOfficialName, getCourseSearchStrings } from "./courseName.js";
 
 export function matchesFilter(ctx, courseId) {
   const c = ctx.derived.courseCatalog[courseId];
@@ -15,9 +16,11 @@ export function matchesFilter(ctx, courseId) {
 
 export function matchesSearch(ctx, courseId) {
   if (!ctx.ui.search) return true;
-  const name = getCourseName(ctx, courseId).toLowerCase();
-  const code = ctx.derived.courseCatalog[courseId]?.code?.toLowerCase() ?? "";
-  return name.includes(ctx.ui.search) || code.includes(ctx.ui.search);
+  const q = ctx.ui.search;
+  const haystack = getCourseSearchStrings(ctx, courseId)
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q);
 }
 
 export function makeCourseCard(ctx, courseId, kind, sem, hooks) {
@@ -44,6 +47,8 @@ export function makeCourseCard(ctx, courseId, kind, sem, hooks) {
   if (lockedAny) div.classList.add("is-locked");
 
   const name = getCourseName(ctx, courseId);
+  const alias = getCourseAlias(ctx, courseId);
+  const officialName = getCourseOfficialName(ctx, courseId);
   const creditsDisplay = getCreditsDisplay(ctx, courseId, kind);
 
   const checkHTML = isMultiActiveHere
@@ -56,15 +61,20 @@ export function makeCourseCard(ctx, courseId, kind, sem, hooks) {
     "";
 
   const lockChip = lockedAny ? `<span class="chip warn">${escapeHTML(lockLabel)}</span>` : "";
+  const aliasChip = (alias && alias !== officialName) ? `<span class="chip">Alias</span>` : "";
+  const titleText = (alias && alias !== officialName)
+    ? `${name} · Oficial: ${officialName}`
+    : name;
 
   div.innerHTML = `
     <div class="course__left" style="display:flex; gap:10px; align-items:flex-start;">
       ${checkHTML}
       <div style="min-width:0;">
-        <div class="course__name" title="${escapeHTML(name)}">${escapeHTML(name)}</div>
+        <div class="course__name" title="${escapeHTML(titleText)}">${escapeHTML(name)}</div>
         <div class="course__meta">
           ${statusChip}
           ${lockChip}
+          ${aliasChip}
         </div>
       </div>
     </div>
@@ -104,10 +114,4 @@ export function makeCourseCard(ctx, courseId, kind, sem, hooks) {
   });
 
   return div;
-}
-
-function getCourseName(ctx, courseId) {
-  const custom = ctx.state.customNames?.[courseId];
-  if (custom && custom.trim()) return custom.trim();
-  return ctx.derived.courseCatalog[courseId]?.name ?? courseId;
 }

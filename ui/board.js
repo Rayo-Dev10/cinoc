@@ -2,6 +2,7 @@ import { PROGRAMS } from "../core/derived.js";
 import { isSatisfied } from "../core/gating.js";
 import { getCreditsValueForUI, kindOfCourse, getPlannedSemester, moveWithCoreqs } from "../core/placement.js";
 import { makeCourseCard, matchesFilter, matchesSearch } from "./courseCard.js";
+import { getCourseName } from "./courseName.js";
 
 let dragInProgress = false;
 
@@ -287,10 +288,4 @@ function countPendingCreditsForSemester(ctx, sem) {
     }
   }
   return sum;
-}
-
-function getCourseName(ctx, courseId) {
-  const custom = ctx.state.customNames?.[courseId];
-  if (custom && custom.trim()) return custom.trim();
-  return ctx.derived.courseCatalog[courseId]?.name ?? courseId;
 }

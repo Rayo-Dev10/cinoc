@@ -2,6 +2,7 @@ import { PROGRAMS } from "../core/derived.js";
 import { computeGate } from "../core/gating.js";
 import { kindOfCourse, moveWithCoreqs, getPlannedSemester } from "../core/placement.js";
 import { kvBlock, escapeHTML } from "../utils/dom.js";
+import { getCourseName, getCourseAlias, getCourseOfficialName } from "./courseName.js";
 
 export function wireModalShell() {
   const modal = document.getElementById("courseModal");
@@ -22,8 +23,9 @@ function openCourseModal(ctx, courseId, kind, hooks) {
   const body = document.getElementById("modalBody");
 
   const name = getCourseName(ctx, courseId);
+  const alias = getCourseAlias(ctx, courseId);
+  const officialName = getCourseOfficialName(ctx, courseId);
   const code = ctx.derived.courseCatalog[courseId]?.code ?? "—";
-  const isElective = ctx.derived.courseCatalog[courseId]?.type === "elective_slot";
   const status = ctx.state.courseStatus?.[courseId] ?? null;
   const sem = getPlannedSemester(ctx, courseId);
 
@@ -46,11 +48,15 @@ function openCourseModal(ctx, courseId, kind, hooks) {
     creditLine = `${ctx.derived.contaCredits[courseId] ?? 0} cr`;
   }
 
-  body.appendChild(kvBlock([
+  const detailRows = [
     ["Créditos", creditLine],
-    ["Estado", status === "completed" ? "Completada" : status === "homologated" ? "Homologada" : "Pendiente"],
-  ]));
+  ];
+  if (alias && alias !== officialName) {
+    detailRows.push(["Nombre oficial", officialName]);
+  }
+  detailRows.push(["Estado", status === "completed" ? "Completada" : status === "homologated" ? "Homologada" : "Pendiente"]);
 
+  body.appendChild(kvBlock(detailRows));
   const actions = document.createElement("div");
   actions.className = "card";
   actions.innerHTML = `
@@ -79,35 +85,38 @@ function openCourseModal(ctx, courseId, kind, hooks) {
       </div>
     </div>
 
-    ${isElective ? `
-      <div style="margin-top:12px" class="kv">
-        <div class="k">Nombre (electiva)</div>
-        <div class="v">
-          <input id="electiveName" type="text" placeholder="Electiva..." />
-        </div>
-        <div class="k"></div>
-        <div class="v">
-          <button type="button" class="btn btn--ghost" id="saveElectiveName">Guardar nombre</button>
-        </div>
+    <div style="margin-top:12px" class="kv">
+      <div class="k">Alias visible</div>
+      <div class="v">
+        <input id="aliasName" type="text" placeholder="Nombre alterno..." />
       </div>
-    ` : ""}
-  `;
+      <div class="k"></div>
+      <div class="v" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn--ghost" id="saveAliasName">Guardar alias</button>
+        <button type="button" class="btn btn--ghost" id="clearAliasName">Limpiar alias</button>
+      </div>
+    </div>`;
   body.appendChild(actions);
 
   const moveSelect = actions.querySelector("#moveSelect");
   moveSelect.value = sem;
 
-  if (isElective) {
-    const inp = actions.querySelector("#electiveName");
-    inp.value = ctx.state.customNames?.[courseId] ?? "";
-    actions.querySelector("#saveElectiveName").addEventListener("click", () => {
-      const v = inp.value.trim();
-      ctx.state.customNames[courseId] = v;
-      hooks.onStateChanged();
-      hooks.onToast("Nombre de electiva guardado.");
-      modal.close();
-    });
-  }
+  const aliasInput = actions.querySelector("#aliasName");
+  aliasInput.value = alias;
+  actions.querySelector("#saveAliasName").addEventListener("click", () => {
+    const v = aliasInput.value.trim();
+    if (v) ctx.state.customNames[courseId] = v;
+    else delete ctx.state.customNames[courseId];
+    hooks.onStateChanged();
+    hooks.onToast(v ? "Alias guardado." : "Alias eliminado.");
+    modal.close();
+  });
+  actions.querySelector("#clearAliasName").addEventListener("click", () => {
+    delete ctx.state.customNames[courseId];
+    hooks.onStateChanged();
+    hooks.onToast("Alias eliminado.");
+    modal.close();
+  });
 
   actions.querySelectorAll("button[data-act]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -198,9 +207,4 @@ function unlockBlock(ctx, courseId, kind, gateAdmin, gateConta) {
   wrap.appendChild(list);
   return wrap;
 }
-
-function getCourseName(ctx, courseId) {
-  const custom = ctx.state.customNames?.[courseId];
-  if (custom && custom.trim()) return custom.trim();
-  return ctx.derived.courseCatalog[courseId]?.name ?? courseId;
-}
+
