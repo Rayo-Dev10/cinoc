@@ -1,0 +1,379 @@
+{
+  "s": {
+    "1": [
+      "constitucion_politica_y_etica",
+      "matematicas",
+      "principios_de_administracion",
+      "principios_de_contabilidad",
+      "principios_de_economia",
+      "tecnicas_de_expresion_oral_y_escrita"
+    ],
+    "2": [
+      "organizacion_de_empresas",
+      "contexto_regional",
+      "costos",
+      "economia_de_empresas",
+      "estadistica",
+      "introduccion_a_las_ciencias_sociales"
+    ],
+    "3": [
+      "costos_por_procesos",
+      "emprenderismo",
+      "ingles_i",
+      "legislacion_comercial_y_laboral",
+      "matematica_financiera",
+      "metodologia_de_la_investigacion",
+      "software_y_contabilizacion_de_soportes",
+      "administracion_de_la_produccion",
+      "fundamentos_de_mercadeo"
+    ],
+    "4": [
+      "contabilidad_patrimonial",
+      "ingles_ii",
+      "iva_retefuente_e_ica",
+      "presupuestos_privados",
+      "propedeutica_sistemas_aplicados",
+      "talento_humano",
+      "direccion_y_control",
+      "emprendimiento",
+      "analisis_financiero"
+    ],
+    "5": [
+      "auditoria",
+      "ciclo_contable_y_tributario_i",
+      "electiva_ii_economia_solidaria",
+      "impuesto_de_renta_y_cree",
+      "formulacion_y_evaluacion_de_proyectos",
+      "psicologia_de_las_organizaciones"
+    ],
+    "6": [
+      "ingles_iii",
+      "ingles_iv",
+      "enfoque_gerencial",
+      "gestion_tributaria"
+    ]
+  },
+  "m": {
+    "constitucion_politica_y_etica": {
+      "n": "Constitución Política y Ética",
+      "k": 1,
+      "op": [
+        [["Jue", "6:15 PM", "7:00 PM"]],
+        [["Vie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "matematicas": {
+      "n": "Matemáticas",
+      "k": 1,
+      "op": [
+        [["Jue", "8:00 PM", "8:45 PM"]],
+        [["Jue", "8:45 PM", "9:30 PM"]],
+        [["Lun", "6:15 PM", "7:00 PM"]],
+        [["Lun", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "principios_de_administracion": {
+      "n": "Principios de Administración",
+      "k": [1, 2],
+      "op": [
+        [["Mar", "8:45 PM", "9:30 PM"]],
+        [["Mie", "6:15 PM", "7:00 PM"], ["Jue", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "principios_de_contabilidad": {
+      "n": "Principios de Contabilidad",
+      "k": 2,
+      "op": [
+        [["Mie", "6:15 PM", "7:00 PM"], ["Jue", "6:15 PM", "7:00 PM"]],
+        [["Mie", "8:45 PM", "9:30 PM"], ["Jue", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "principios_de_economia": {
+      "n": "Principios de Economía",
+      "k": 1,
+      "op": [
+        [["Vie", "6:15 PM", "7:00 PM"]],
+        [["Vie", "7:00 PM", "7:45 PM"]],
+        [["Mar", "6:15 PM", "7:00 PM"]],
+        [["Mar", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "tecnicas_de_expresion_oral_y_escrita": {
+      "n": "Técnicas de Expresión Oral y Escrita",
+      "a": "Expresión Oral y Escrita",
+      "k": 1,
+      "op": [
+        [["Lun", "6:15 PM", "7:00 PM"]],
+        [["Mar", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "organizacion_de_empresas": {
+      "n": "Organización de Empresas",
+      "k": 2,
+      "op": [
+        [["Mar", "6:15 PM", "7:00 PM"], ["Vie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "contexto_regional": {
+      "n": "Contexto Regional",
+      "k": 1,
+      "op": [
+        [["Mar", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "costos": {
+      "n": "Costos",
+      "k": 1,
+      "op": [
+        [["Mie", "8:00 PM", "8:45 PM"]],
+        [["Mie", "8:45 PM", "9:30 PM"]],
+        [["Mie", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "economia_de_empresas": {
+      "n": "Economía de Empresas",
+      "k": 1,
+      "op": [
+        [["Jue", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "estadistica": {
+      "n": "Estadística",
+      "k": 1,
+      "op": [
+        [["Jue", "8:00 PM", "8:45 PM"]],
+        [["Mie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "introduccion_a_las_ciencias_sociales": {
+      "n": "Introducción a las Ciencias Sociales",
+      "a": "Ciencias Sociales",
+      "k": 1,
+      "op": [
+        [["Jue", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "costos_por_procesos": {
+      "n": "Costos por Procesos",
+      "k": 1,
+      "op": [
+        [["Jue", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "emprenderismo": {
+      "n": "Emprenderismo",
+      "k": 1,
+      "op": [
+        [["Mar", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "ingles_i": {
+      "n": "Inglés I",
+      "k": 1,
+      "op": [
+        [["Jue", "8:45 PM", "9:30 PM"]],
+        [["Jue", "9:30 PM", "10:15 PM"]],
+        [["Vie", "8:00 PM", "8:45 PM"]],
+        [["Vie", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "ingles_ii": {
+      "n": "Inglés II",
+      "k": 1,
+      "op": [
+        [["Mie", "8:45 PM", "9:30 PM"]],
+        [["Mie", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "ingles_iii": {
+      "n": "Inglés III",
+      "k": 1,
+      "op": [
+        [["Lun", "8:45 PM", "9:30 PM"]],
+        [["Lun", "9:30 PM", "10:15 PM"]],
+        [["Mar", "8:45 PM", "9:30 PM"]],
+        [["Mar", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "ingles_iv": {
+      "n": "Inglés IV",
+      "k": 1,
+      "op": [
+        [["Jue", "8:45 PM", "9:30 PM"]],
+        [["Jue", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "legislacion_comercial_y_laboral": {
+      "n": "Legislación Comercial y Laboral",
+      "k": 1,
+      "op": [
+        [["Lun", "6:15 PM", "7:00 PM"]],
+        [["Lun", "7:00 PM", "7:45 PM"]],
+        [["Mar", "6:15 PM", "7:00 PM"]],
+        [["Mar", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "matematica_financiera": {
+      "n": "Matemática Financiera",
+      "k": 1,
+      "op": [
+        [["Lun", "6:15 PM", "7:00 PM"]],
+        [["Lun", "7:00 PM", "7:45 PM"]],
+        [["Mar", "6:15 PM", "7:00 PM"]],
+        [["Mar", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "metodologia_de_la_investigacion": {
+      "n": "Metodología de la Investigación",
+      "k": 1,
+      "op": [
+        [["Mie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "software_y_contabilizacion_de_soportes": {
+      "n": "Software y Contabilización de Soportes",
+      "a": "Software y Soportes",
+      "k": 1,
+      "op": [
+        [["Mie", "8:00 PM", "8:45 PM"]],
+        [["Mie", "8:45 PM", "9:30 PM"]],
+        [["Mie", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "administracion_de_la_produccion": {
+      "n": "Administración de la Producción",
+      "k": 1,
+      "op": [
+        [["Mie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "fundamentos_de_mercadeo": {
+      "n": "Fundamentos de Mercadeo",
+      "k": 1,
+      "op": [
+        [["Mie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "contabilidad_patrimonial": {
+      "n": "Contabilidad Patrimonial",
+      "k": 1,
+      "op": [
+        [["Mar", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "iva_retefuente_e_ica": {
+      "n": "IVA, RETEFUENTE E ICA",
+      "k": 2,
+      "op": [
+        [["Lun", "8:45 PM", "9:30 PM"], ["Jue", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "presupuestos_privados": {
+      "n": "Presupuestos privados",
+      "k": 2,
+      "op": [
+        [["Jue", "6:15 PM", "7:00 PM"], ["Mar", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "propedeutica_sistemas_aplicados": {
+      "n": "Propedéutica Sistemas Aplicados",
+      "a": "Sistemas Aplicados",
+      "k": 1,
+      "op": [
+        [["Mie", "8:00 PM", "8:45 PM"]],
+        [["Mie", "8:45 PM", "9:30 PM"]],
+        [["Mie", "9:30 PM", "10:15 PM"]]
+      ]
+    },
+    "talento_humano": {
+      "n": "Talento Humano",
+      "k": [1, 2],
+      "op": [
+        [["Lun", "6:15 PM", "7:00 PM"]],
+        [["Lun", "7:00 PM", "7:45 PM"]],
+        [["Mie", "6:15 PM", "7:00 PM"], ["Mie", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "direccion_y_control": {
+      "n": "Dirección y Control",
+      "k": 1,
+      "op": [
+        [["Mie", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "emprendimiento": {
+      "n": "Emprendimiento",
+      "k": 1,
+      "op": [
+        [["Mar", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "analisis_financiero": {
+      "n": "Análisis Financiero",
+      "k": 1,
+      "op": [
+        [["Jue", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "auditoria": {
+      "n": "Auditoría",
+      "k": 1,
+      "op": [
+        [["Vie", "8:00 PM", "8:45 PM"]],
+        [["Vie", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "ciclo_contable_y_tributario_i": {
+      "n": "Ciclo Contable y Tributario I",
+      "k": 1,
+      "op": [
+        [["Mie", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "electiva_ii_economia_solidaria": {
+      "n": "Electiva II Contabilidad de Economía Solidaria",
+      "a": "Electiva II (Economía Solidaria)",
+      "k": 1,
+      "op": [
+        [["Lun", "8:45 PM", "9:30 PM"]]
+      ]
+    },
+    "impuesto_de_renta_y_cree": {
+      "n": "Impuesto de Renta y Complementarios y CREE",
+      "a": "Renta y CREE",
+      "k": 1,
+      "op": [
+        [["Mar", "6:15 PM", "7:00 PM"]],
+        [["Mar", "7:00 PM", "7:45 PM"]]
+      ]
+    },
+    "formulacion_y_evaluacion_de_proyectos": {
+      "n": "Formulación y evaluación de proyectos",
+      "k": 1,
+      "op": [
+        [["Jue", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "psicologia_de_las_organizaciones": {
+      "n": "Psicología de las Organizaciones",
+      "k": 1,
+      "op": [
+        [["Mar", "6:15 PM", "7:00 PM"]]
+      ]
+    },
+    "enfoque_gerencial": {
+      "n": "Enfoque Gerencial",
+      "k": 1,
+      "op": [
+        [["Lun", "8:00 PM", "8:45 PM"]]
+      ]
+    },
+    "gestion_tributaria": {
+      "n": "Gestión Tributaria",
+      "k": 1,
+      "op": [
+        [["Jue", "6:15 PM", "7:00 PM"]]
+      ]
+    }
+  }
+}

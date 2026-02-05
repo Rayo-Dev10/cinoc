@@ -333,6 +333,59 @@ html[data-theme="dark"] .section__head{ border-bottom:1px solid rgba(255,255,255
   letter-spacing:.06em;
   text-transform: uppercase;
 }
+.semesterBanner__row{
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:center;
+  gap:10px;
+}
+.semesterBanner__left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  justify-content:flex-start;
+}
+.semesterBanner__title{
+  font-weight:1000;
+  letter-spacing:.06em;
+}
+.semesterBanner__center{
+  text-align:center;
+  font-weight:900;
+  opacity:.95;
+}
+.semesterBanner__right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.semesterBanner__label,
+.semesterBanner__count{
+  color:var(--bone);
+  opacity:.95;
+}
+.semesterBanner__select{
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.14);
+  color:var(--bone);
+  outline:none;
+}
+.semesterBanner__select option{
+  background:var(--panel);
+  color:var(--text);
+}
+.btn--banner{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.28);
+  color:var(--bone);
+}
+.btn--banner:hover{
+  background:rgba(255,255,255,.22);
+}
 
 /* Dropzone minimal (sin card contenedora) */
 .dropzone{
