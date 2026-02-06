@@ -24,6 +24,7 @@ const ctx = {
       auto: {
         limitMode: "unlimited",
         maxCredits: 24,
+        filter: "",
       },
     },
   },
@@ -238,6 +239,9 @@ function renderShell() {
 
           <div class="card">
             <h4 style="margin:0 0 8px 0">Fijar y excluir</h4>
+            <div class="suggestFilter">
+              <input id="suggestLockSearch" type="text" placeholder="Buscar asignatura" />
+            </div>
             <div id="suggestLocks" class="suggestLocks"></div>
             <p class="kpiSmall">Fijadas siempre se incluyen si no colisionan. Excluidas nunca se sugieren.</p>
           </div>
@@ -405,6 +409,11 @@ function bindUI() {
     const strategy = ctx.ui.enrollment.auto.strategy || "asc";
     runAutoSuggestion(ctx, strategy);
     closeSuggestModal();
+  });
+
+  document.getElementById("suggestLockSearch")?.addEventListener("input", (e) => {
+    ctx.ui.enrollment.auto.filter = e.target.value.trim().toLowerCase();
+    syncSuggestModal(ctx);
   });
 }
 
@@ -1149,6 +1158,9 @@ function syncSuggestModal(ctx) {
     input.disabled = mode !== "limited";
   }
 
+  const filterEl = document.getElementById("suggestLockSearch");
+  if (filterEl) filterEl.value = ctx.ui.enrollment.auto.filter || "";
+
   const locks = document.getElementById("suggestLocks");
   if (locks) {
     locks.innerHTML = "";
@@ -1156,7 +1168,15 @@ function syncSuggestModal(ctx) {
     const excluded = new Set(ctx.state.enrollment.auto.excluded ?? []);
     const fixedOptions = ctx.state.enrollment.auto.fixedOptions ?? {};
     const list = (ctx.enroll?.order ?? []).map(k => ctx.enroll?.courses?.[k]).filter(Boolean);
+    const filter = (ctx.ui.enrollment.auto.filter || "").toLowerCase();
     for (const course of list) {
+      if (filter) {
+        const courseId = course.courseId || "";
+        const code = courseId ? (ctx.derived.courseCatalog?.[courseId]?.code ?? "") : "";
+        const alias = course.alias ?? "";
+        const hay = `${course.name} ${alias} ${code}`.toLowerCase();
+        if (!hay.includes(filter)) continue;
+      }
       const row = document.createElement("div");
       row.className = "suggestLockRow";
       const state = fixed.has(course.key) ? "fixed" : excluded.has(course.key) ? "excluded" : "free";

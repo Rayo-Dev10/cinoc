@@ -316,6 +316,9 @@ html[data-theme="dark"] .suggestOption.is-active{
   max-height:240px;
   overflow:auto;
 }
+.suggestFilter{
+  margin-bottom:8px;
+}
 .suggestLockRow{
   display:grid;
   grid-template-columns: minmax(180px, 1fr) auto minmax(200px, 1fr);
