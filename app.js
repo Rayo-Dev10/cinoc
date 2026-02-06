@@ -1208,7 +1208,10 @@ function syncSuggestModal(ctx) {
     const fixed = new Set(ctx.state.enrollment.auto.fixed ?? []);
     const excluded = new Set(ctx.state.enrollment.auto.excluded ?? []);
     const fixedOptions = ctx.state.enrollment.auto.fixedOptions ?? {};
-    const list = (ctx.enroll?.order ?? []).map(k => ctx.enroll?.courses?.[k]).filter(Boolean);
+    const list = (ctx.enroll?.order ?? [])
+      .map(k => ctx.enroll?.courses?.[k])
+      .filter(Boolean)
+      .filter(course => !(course.courseId && isSatisfied(ctx.state, course.courseId)));
     const filter = (ctx.ui.enrollment.auto.filter || "").toLowerCase();
     for (const course of list) {
       if (filter) {

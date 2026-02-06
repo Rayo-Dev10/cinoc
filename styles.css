@@ -856,7 +856,7 @@ html[data-theme="dark"] .dropzone__empty{
   display:flex;
   justify-content:space-between;
   gap:10px;
-  padding:10px 10px;
+  padding:6px 8px;
   border-radius:14px;
   border:1px solid var(--stroke);
   background:rgba(255,255,255,.45);
@@ -890,15 +890,15 @@ html[data-theme="dark"] .course:hover{ background:rgba(255,255,255,.07); }
   overflow:hidden;
   text-overflow:ellipsis;
 }
-.course__meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.course__meta{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px}
 
 .chip{
-  font-size:.78rem;
+  font-size:.68rem;
   color:var(--text);
   background:var(--chip);
   border:1px solid var(--stroke);
   border-radius:999px;
-  padding:2px 8px;
+  padding:1px 6px;
 }
 .chip.ok{ color: var(--accent-green); }
 .chip.blue{ color: var(--accent-blue); }
