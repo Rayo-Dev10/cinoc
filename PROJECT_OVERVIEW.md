@@ -1,11 +1,11 @@
-# Avance IES — Resumen del Proyecto
+# IES Planner — Resumen del Proyecto
 
-Este proyecto es una app web estática para gestionar el avance académico y planificar la **inscripción de materias** con validación de requisitos y colisiones de horario. Está orientada a dos programas: **Administración de Empresas** y **Contaduría Pública**.
+Este proyecto es una app web estática para gestionar el avance académico y planificar la **inscripción de materias** con validación de requisitos, horarios sin colisiones y autosugerencias. Está orientada a dos programas: **Administración de Empresas** y **Contaduría Pública**.
 
 ## Qué hace
 - Muestra el avance por créditos, materias completadas y homologadas.
 - Permite mover materias entre semestres (con correquisitos).
-- Permite **Modo Inscripción**: sugerencias de materias disponibles según horario, rango de horas y requisitos.
+- Permite **Modo Inscripción**: sugerencias de materias disponibles según horario, rango de horas, requisitos, fijadas/excluidas y límite de créditos.
 - Importa/exporta el progreso en JSON.
 
 ## Archivos clave

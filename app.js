@@ -16,6 +16,7 @@ const ctx = {
   ui: {
     filter: "all",
     search: "",
+    semesterFilter: "all",
     enrollment: {
       active: false,
       draft: null,
@@ -77,44 +78,25 @@ function renderShell() {
     app.innerHTML = `
       <header class="topbar">
         <div class="topbar__title">
-          <h1>Avance IES</h1>
-          <p class="kpiSmall">Monitor de materias y progreso</p>
+          <h1>IES Planner</h1>
+          <p class="kpiSmall">Progreso, requisitos y horarios sin colisiones</p>
         </div>
 
         <div class="topbar__actions">
-          <input id="searchInput" class="search" type="text" placeholder="Buscar materia..." />
-
-          <div class="segmented" role="tablist" aria-label="Filtro de materias">
-            <button class="segmented__btn is-active" data-filter="all">Todas</button>
-            <button class="segmented__btn" data-filter="mandatory">Obligatorias</button>
-            <button class="segmented__btn" data-filter="elective">Electivas</button>
+          <div class="modeToggle">
+            <button id="modeCurriculumBtn" class="btn">Modo Currículo</button>
+            <button id="modeEnrollBtn" class="btn">Modo Inscripción</button>
           </div>
 
-          <div class="themeSwitch">
-            <span>Claro/Oscuro</span>
-            <input id="themeToggle" type="checkbox" aria-label="Cambiar tema" />
+            <div class="themeSwitch">
+              <span class="themeIcon" aria-hidden="true">☀️</span>
+              <input id="themeToggle" type="checkbox" aria-label="Cambiar tema" />
+              <span class="themeIcon" aria-hidden="true">🌙</span>
+            </div>
           </div>
-
-          <div class="btnrow">
-            <button id="enrollModeBtn" class="btn">Modo Inscripción</button>
-            <button id="exportBtn" class="btn btn--ghost">Exportar</button>
-            <label class="btn btn--ghost" style="display:inline-flex; gap:8px; align-items:center; cursor:pointer;">
-              Importar
-              <input id="importFile" type="file" accept="application/json" style="display:none" />
-            </label>
-            <button id="resetBtn" class="btn btn--danger">Reset</button>
-          </div>
-        </div>
       </header>
 
       <main class="container">
-        <div id="enrollMiniTab" class="enrollMiniTab is-hidden">
-          <button id="enrollMaximizeBtn" class="btn btn--ghost" type="button" title="Maximizar">
-            Inscripción
-            <span class="enrollMiniIcon">▣</span>
-          </button>
-        </div>
-
         <section id="enrollPanel" class="section enrollPanel is-hidden">
           <div class="section__head">
             <div>
@@ -169,7 +151,7 @@ function renderShell() {
               <div id="enrollSuggestions" class="enrollSuggestions"></div>
             </div>
 
-            <div class="enrollPane">
+            <div class="enrollPane enrollPane--schedule">
               <div class="enrollPane__head">
                 <h3>Horario sugerido</h3>
                 <div class="enrollPane__meta">
@@ -195,10 +177,24 @@ function renderShell() {
           <div id="stats" class="stats"></div>
         </section>
 
-        <section class="section section--main">
-          <div class="section__head">
-            <h2>Semestres</h2>
-          </div>
+          <section class="section section--main">
+            <div class="section__head section__head--center">
+              <h2>Semestres</h2>
+              <div class="filtersCenter">
+                <div class="segmented" role="tablist" aria-label="Filtro de materias">
+                  <button class="segmented__btn" data-filter="elective">Electivas</button>
+                  <button class="segmented__btn" data-filter="in_progress">En curso</button>
+                  <button class="segmented__btn" data-filter="mandatory">Obligatorias</button>
+                  <button class="segmented__btn is-active" data-filter="all">Todas</button>
+                </div>
+              </div>
+              <div class="semesterFilter">
+                <select id="semesterFilter" class="semesterFilter__select" aria-label="Filtrar semestres">
+                  <option value="all">Todos</option>
+                </select>
+                <button id="semesterFilterClear" class="btn btn--ghost semesterFilter__clear" type="button" title="Quitar filtro" aria-label="Quitar filtro">×</button>
+              </div>
+            </div>
 
           <div class="boardHead">
             <div class="boardHead__col">Administración</div>
@@ -300,59 +296,53 @@ function bindUI() {
   });
 
   const searchInput = document.getElementById("searchInput");
-  searchInput.addEventListener("input", () => {
-    ctx.ui.search = searchInput.value.trim().toLowerCase();
-    debounce(() => rerenderBoard(), 220)();
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      ctx.ui.search = searchInput.value.trim().toLowerCase();
+      debounce(() => rerenderBoard(), 220)();
+    });
+  }
+
+  const modeCurriculumBtn = document.getElementById("modeCurriculumBtn");
+  const modeEnrollBtn = document.getElementById("modeEnrollBtn");
+
+  modeCurriculumBtn?.addEventListener("click", () => {
+    if (modeCurriculumBtn.disabled || modeEnrollBtn.disabled) return;
+    modeCurriculumBtn.disabled = true;
+    modeEnrollBtn.disabled = true;
+    setTimeout(() => {
+      modeCurriculumBtn.disabled = false;
+      modeEnrollBtn.disabled = false;
+    }, 2000);
+
+    if (!ctx.ui.enrollment.active) return;
+    ctx.ui.enrollment.minimized = true;
+    document.body.classList.add("enroll-minimized");
+    rerenderEnrollment(ctx);
   });
 
-  document.getElementById("exportBtn").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(ctx.state, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "progreso_ies_monitor.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    toast("Exportado.");
-  });
+  modeEnrollBtn?.addEventListener("click", () => {
+    if (modeCurriculumBtn.disabled || modeEnrollBtn.disabled) return;
+    modeCurriculumBtn.disabled = true;
+    modeEnrollBtn.disabled = true;
+    setTimeout(() => {
+      modeCurriculumBtn.disabled = false;
+      modeEnrollBtn.disabled = false;
+    }, 2000);
 
-  document.getElementById("importFile").addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const txt = await file.text();
-      const incoming = JSON.parse(txt);
-      if (!incoming || incoming.version !== 1) throw new Error("JSON inválido (version != 1)");
-
-      ctx.state = incoming;
-      saveState(STORAGE_KEY, ctx.state);
-      toast("Progreso importado.");
-      rerenderAll();
-    } catch (err) {
-      console.error(err);
-      toast("No se pudo importar. Revisa el archivo.");
-    } finally {
-      e.target.value = "";
+    if (!ctx.ui.enrollment.active) {
+      openEnrollmentMode(ctx);
+      return;
     }
-  });
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    ctx.state = createDefaultState(ctx.derived, ctx.enroll);
-    saveState(STORAGE_KEY, ctx.state);
-    toast("Progreso reiniciado.");
-    rerenderAll();
-  });
-
-  const enrollBtn = document.getElementById("enrollModeBtn");
-  enrollBtn?.addEventListener("click", () => {
-    openEnrollmentMode(ctx);
+    ctx.ui.enrollment.minimized = false;
+    document.body.classList.remove("enroll-minimized");
+    rerenderEnrollment(ctx);
   });
 
   document.getElementById("enrollSaveBtn")?.addEventListener("click", () => {
     saveEnrollmentDraft(ctx);
     closeEnrollmentMode(ctx);
+    rerenderAll();
     toast("Inscripción guardada.");
   });
 
@@ -390,15 +380,22 @@ function bindUI() {
     document.body.classList.add("enroll-minimized");
     rerenderEnrollment(ctx);
   });
-  document.getElementById("enrollMaximizeBtn")?.addEventListener("click", () => {
-    ctx.ui.enrollment.minimized = false;
-    document.body.classList.remove("enroll-minimized");
-    rerenderEnrollment(ctx);
-  });
 
   document.getElementById("enrollSemesterFilter")?.addEventListener("change", (e) => {
     ctx.ui.enrollment.semester = e.target.value;
     rerenderEnrollment(ctx);
+  });
+
+  document.getElementById("semesterFilter")?.addEventListener("change", (e) => {
+    ctx.ui.semesterFilter = e.target.value;
+    syncSemesterFilter(ctx);
+    rerenderBoard();
+  });
+
+  document.getElementById("semesterFilterClear")?.addEventListener("click", () => {
+    ctx.ui.semesterFilter = "all";
+    syncSemesterFilter(ctx);
+    rerenderBoard();
   });
 
   document.getElementById("enrollSemesterClear")?.addEventListener("click", () => {
@@ -456,6 +453,7 @@ function rerenderStats() {
 }
 
 function rerenderBoard() {
+  syncSemesterFilter(ctx);
   renderSemesterBoard(ctx, {
     onStateChanged: () => {
       saveState(STORAGE_KEY, ctx.state);
@@ -498,11 +496,34 @@ function ensureEnrollmentDraft(ctx) {
 function saveEnrollmentDraft(ctx) {
   const draft = ensureEnrollmentDraft(ctx);
   ctx.state.enrollment = JSON.parse(JSON.stringify(draft));
+  applyEnrollmentInProgress(ctx, draft);
   saveState(STORAGE_KEY, ctx.state);
 }
 
 function discardEnrollmentDraft(ctx) {
   ctx.ui.enrollment.draft = null;
+}
+
+function applyEnrollmentInProgress(ctx, draft) {
+  const selectedKeys = Object.keys(draft.selected ?? {});
+  if (selectedKeys.length === 0) return;
+
+  const selectedCourseIds = new Set();
+  for (const key of selectedKeys) {
+    const course = ctx.enroll?.courses?.[key];
+    if (course?.courseId) selectedCourseIds.add(course.courseId);
+  }
+
+  for (const [cid, status] of Object.entries(ctx.state.courseStatus ?? {})) {
+    if (status === "in_progress" && !selectedCourseIds.has(cid)) {
+      delete ctx.state.courseStatus[cid];
+    }
+  }
+
+  for (const cid of selectedCourseIds) {
+    if (isSatisfied(ctx.state, cid)) continue;
+    ctx.state.courseStatus[cid] = "in_progress";
+  }
 }
 
 function onEnrollmentTimeChanged(ctx) {
@@ -527,23 +548,31 @@ function onEnrollmentTimeChanged(ctx) {
 
 function rerenderEnrollment(ctx) {
   const panel = document.getElementById("enrollPanel");
-  const mini = document.getElementById("enrollMiniTab");
+  const searchInput = document.getElementById("searchInput");
+  const modeCurriculumBtn = document.getElementById("modeCurriculumBtn");
+  const modeEnrollBtn = document.getElementById("modeEnrollBtn");
   if (!panel) return;
 
   if (!ctx.ui.enrollment.active) {
     panel.classList.add("is-hidden");
-    mini?.classList.add("is-hidden");
+    if (searchInput) searchInput.style.display = "none";
+    if (modeCurriculumBtn) modeCurriculumBtn.classList.add("btn--primary");
+    if (modeEnrollBtn) modeEnrollBtn.classList.remove("btn--primary");
     return;
   }
 
   if (ctx.ui.enrollment.minimized) {
     panel.classList.add("is-hidden");
-    mini?.classList.remove("is-hidden");
+    if (searchInput) searchInput.style.display = "none";
+    if (modeCurriculumBtn) modeCurriculumBtn.classList.add("btn--primary");
+    if (modeEnrollBtn) modeEnrollBtn.classList.remove("btn--primary");
     return;
   }
 
   panel.classList.remove("is-hidden");
-  mini?.classList.add("is-hidden");
+  if (searchInput) searchInput.style.display = "none";
+  if (modeCurriculumBtn) modeCurriculumBtn.classList.remove("btn--primary");
+  if (modeEnrollBtn) modeEnrollBtn.classList.add("btn--primary");
   const draft = ensureEnrollmentDraft(ctx);
   syncEnrollmentControls(ctx, draft);
 
@@ -784,7 +813,7 @@ function renderEnrollmentGrid(ctx, draft) {
   const days = ["Lun", "Mar", "Mie", "Jue", "Vie"];
   const startMin = parseTimeToMinutes(draft.preferences.start);
   const endMin = parseTimeToMinutes(draft.preferences.end);
-  const slots = computeEnrollmentTimeSlots(ctx, startMin, endMin);
+  let slots = computeEnrollmentTimeSlots(ctx, startMin, endMin);
 
   if (slots.length === 0) {
     const empty = document.createElement("div");
@@ -795,6 +824,18 @@ function renderEnrollmentGrid(ctx, draft) {
   }
 
   const selectedSessions = getSelectedSessions(ctx, draft);
+  if (selectedSessions.length > 0) {
+    slots = slots.filter(slot => selectedSessions.some(s =>
+      s.startMin < slot.endMin && s.endMin > slot.startMin
+    ));
+  }
+  if (slots.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "enrollEmpty";
+    empty.textContent = "No hay bloques con materias seleccionadas.";
+    gridEl.appendChild(empty);
+    return;
+  }
 
   const occupancy = {};
   for (const day of days) occupancy[day] = Array(slots.length).fill("");
@@ -1950,9 +1991,11 @@ function renderSemesterBoard(ctx, hooks) {
   const board = document.getElementById("semesterBoard");
   board.innerHTML = "";
 
-  const semesters = ["1", "2", "3", "4", "5", "6"];
+  const semesters = getAllSemesters(ctx);
+  const activeFilter = ctx.ui.semesterFilter || "all";
 
   for (const sem of semesters) {
+    if (activeFilter !== "all" && String(sem) !== String(activeFilter)) continue;
     const grid = document.createElement("div");
     grid.className = "semesterGrid";
     grid.dataset.sem = sem;
@@ -1963,6 +2006,44 @@ function renderSemesterBoard(ctx, hooks) {
     grid.appendChild(renderDropzone(ctx, "contaOnly", sem, hooks));
 
     board.appendChild(grid);
+  }
+}
+
+function getAllSemesters(ctx) {
+  const out = new Set();
+  for (const item of ctx.derived.adminFlat ?? []) out.add(String(item.sem));
+  for (const item of ctx.derived.contaFlat ?? []) out.add(String(item.sem));
+  const list = [...out].filter(Boolean);
+  list.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+  return list.length ? list : ["1", "2", "3", "4", "5", "6"];
+}
+
+function syncSemesterFilter(ctx) {
+  const select = document.getElementById("semesterFilter");
+  const clearBtn = document.getElementById("semesterFilterClear");
+  if (!select) return;
+
+  const semesters = getAllSemesters(ctx);
+  const current = ctx.ui.semesterFilter || "all";
+
+  if (select.dataset.ready !== "1") {
+    select.innerHTML = `<option value="all">Todos</option>`;
+    for (const sem of semesters) {
+      const opt = document.createElement("option");
+      opt.value = String(sem);
+      opt.textContent = `Semestre ${sem}`;
+      select.appendChild(opt);
+    }
+    select.dataset.ready = "1";
+  }
+
+  if (![ "all", ...semesters.map(String) ].includes(String(current))) {
+    ctx.ui.semesterFilter = "all";
+  }
+  select.value = ctx.ui.semesterFilter || "all";
+
+  if (clearBtn) {
+    clearBtn.style.display = select.value === "all" ? "none" : "inline-flex";
   }
 }
 
@@ -2202,6 +2283,7 @@ function matchesFilter(ctx, courseId) {
   const isElective = c?.type === "elective_slot";
 
   if (ctx.ui.filter === "all") return true;
+  if (ctx.ui.filter === "in_progress") return ctx.state.courseStatus?.[courseId] === "in_progress";
   if (ctx.ui.filter === "mandatory") return !isElective;
   if (ctx.ui.filter === "elective") return isElective;
   return true;
@@ -2227,6 +2309,7 @@ function makeCourseCard(ctx, courseId, kind, sem, hooks) {
   const status = ctx.state.courseStatus[courseId] ?? null;
   if (status === "completed") div.classList.add("is-done");
   if (status === "homologated") div.classList.add("is-homo");
+  if (status === "in_progress") div.classList.add("is-progress");
 
   const gateAdmin = (kind === "contaOnly") ? null : computeGate(ctx, PROGRAMS.ADMIN, courseId, kind);
   const gateConta = (kind === "adminOnly") ? null : computeGate(ctx, PROGRAMS.CONTA, courseId, kind);
@@ -2250,6 +2333,7 @@ function makeCourseCard(ctx, courseId, kind, sem, hooks) {
   const statusChip =
     status === "completed" ? `<span class="chip ok">Completada</span>` :
     status === "homologated" ? `<span class="chip blue">Homologada</span>` :
+    status === "in_progress" ? `<span class="chip">En curso</span>` :
     "";
 
   const lockChip = lockedAny ? `<span class="chip warn">${escapeHTML(lockLabel)}</span>` : "";
@@ -2357,7 +2441,7 @@ function openCourseModal(ctx, courseId, kind, hooks) {
   if (alias && alias !== officialName) {
     detailRows.push(["Nombre oficial", officialName]);
   }
-  detailRows.push(["Estado", status === "completed" ? "Completada" : status === "homologated" ? "Homologada" : "Pendiente"]);
+  detailRows.push(["Estado", status === "completed" ? "Completada" : status === "homologated" ? "Homologada" : status === "in_progress" ? "En curso" : "Pendiente"]);
 
   body.appendChild(kvBlock(detailRows));
   const actions = document.createElement("div");
@@ -2521,21 +2605,26 @@ function destroyCharts() {
   }
 }
 
-function createMinimalDonut(el, pct) {
+function createMinimalDonut(el, pct, virtualPct, remainingPct) {
+  const host = el?.parentElement;
+  const size = Math.max(48, Math.round(host?.clientWidth ?? 64));
   const restColor =
     getComputedStyle(document.documentElement).getPropertyValue("--chart-rest").trim() ||
     "rgba(0,0,0,.08)";
+  const virtualColor =
+    getComputedStyle(document.documentElement).getPropertyValue("--chart-virtual").trim() ||
+    "rgba(59,92,204,.55)";
 
   return new ApexCharts(el, {
     chart: {
       type: "donut",
-      height: 96,
-      width: 96,
+      height: size,
+      width: size,
       animations: { enabled: true },
       sparkline: { enabled: true }
     },
-    series: [pct, 100 - pct],
-    colors: ["var(--accent-green)", restColor],
+    series: [pct, virtualPct, remainingPct],
+    colors: ["var(--accent-green)", virtualColor, restColor],
     stroke: { width: 0 },
     legend: { show: false },
     tooltip: { enabled: false },
@@ -2558,8 +2647,10 @@ function computeProgressDetailed(ctx, programId) {
 
   let completedCredits = 0;
   let homologatedCredits = 0;
+  let inProgressCredits = 0;
   let completedCourses = 0;
   let homologatedCourses = 0;
+  let inProgressCourses = 0;
 
   for (const item of flat) {
     const cid = item.course_id;
@@ -2568,13 +2659,33 @@ function computeProgressDetailed(ctx, programId) {
 
     if (status === "completed") { completedCredits += cr; completedCourses++; }
     if (status === "homologated") { homologatedCredits += cr; homologatedCourses++; }
+    if (status === "in_progress") { inProgressCredits += cr; inProgressCourses++; }
   }
 
   const totalCredits = completedCredits + homologatedCredits;
   const planTotal = plan.total_credits ?? 0;
   const pct = planTotal > 0 ? Math.round((totalCredits / planTotal) * 100) : 0;
+  const virtualRaw = planTotal > 0 ? Math.round((inProgressCredits / planTotal) * 100) : 0;
+  const virtualPct = Math.max(0, Math.min(100 - pct, virtualRaw));
+  const remainingVirtualPct = Math.max(0, 100 - pct - virtualPct);
+  const remainingRealPct = Math.max(0, 100 - pct);
+  const virtualTotalPct = Math.max(0, Math.min(100, pct + virtualPct));
 
-  return { planTotal, pct, completedCredits, homologatedCredits, totalCredits, completedCourses, homologatedCourses };
+  return {
+    planTotal,
+    pct,
+    virtualPct,
+    remainingVirtualPct,
+    remainingRealPct,
+    virtualTotalPct,
+    completedCredits,
+    homologatedCredits,
+    inProgressCredits,
+    totalCredits,
+    completedCourses,
+    homologatedCourses,
+    inProgressCourses
+  };
 }
 
 function computeUniqueDoubleProgress(ctx) {
@@ -2582,17 +2693,32 @@ function computeUniqueDoubleProgress(ctx) {
   let contaOnlyCredits = 0;
   let commonMinCredits = 0;
   let doneUniqueCredits = 0;
+  let inProgressUniqueCredits = 0;
+  let inProgressUniqueCourses = 0;
+  const seenInProgress = new Set();
+  const adminSet = ctx.derived.adminSet ?? new Set();
+  const contaSet = ctx.derived.contaSet ?? new Set();
 
   for (const cid of ctx.derived.adminOnlySet) {
     const cr = ctx.derived.adminCredits[cid] ?? 0;
     adminOnlyCredits += cr;
     if (isSatisfied(ctx.state, cid)) doneUniqueCredits += cr;
+    if (ctx.state.courseStatus?.[cid] === "in_progress") {
+      inProgressUniqueCredits += cr;
+      inProgressUniqueCourses += 1;
+      seenInProgress.add(cid);
+    }
   }
 
   for (const cid of ctx.derived.contaOnlySet) {
     const cr = ctx.derived.contaCredits[cid] ?? 0;
     contaOnlyCredits += cr;
     if (isSatisfied(ctx.state, cid)) doneUniqueCredits += cr;
+    if (ctx.state.courseStatus?.[cid] === "in_progress") {
+      inProgressUniqueCredits += cr;
+      inProgressUniqueCourses += 1;
+      seenInProgress.add(cid);
+    }
   }
 
   for (const cid of ctx.derived.commonSet) {
@@ -2601,9 +2727,27 @@ function computeUniqueDoubleProgress(ctx) {
     const m = Math.min(a, c);
     commonMinCredits += m;
     if (isSatisfied(ctx.state, cid)) doneUniqueCredits += m;
+    if (ctx.state.courseStatus?.[cid] === "in_progress") {
+      inProgressUniqueCredits += m;
+      inProgressUniqueCourses += 1;
+      seenInProgress.add(cid);
+    }
   }
 
-  return { totalUniqueCredits: adminOnlyCredits + contaOnlyCredits + commonMinCredits, doneUniqueCredits };
+  for (const [cid, status] of Object.entries(ctx.state.courseStatus ?? {})) {
+    if (status !== "in_progress") continue;
+    if (seenInProgress.has(cid)) continue;
+    if (adminSet.has(cid) || contaSet.has(cid)) continue;
+    inProgressUniqueCourses += 1;
+    seenInProgress.add(cid);
+  }
+
+  return {
+    totalUniqueCredits: adminOnlyCredits + contaOnlyCredits + commonMinCredits,
+    doneUniqueCredits,
+    inProgressUniqueCredits,
+    inProgressUniqueCourses
+  };
 }
 
 function statsCard(title, p, key) {
@@ -2612,31 +2756,37 @@ function statsCard(title, p, key) {
 
   const chartId = `chart-${key}`;
   const pct = Math.max(0, Math.min(100, p.pct));
-  const falt = 100 - pct;
+  const virtual = Math.max(0, Math.min(100 - pct, p.virtualPct ?? 0));
+  const remainingVirtual = Math.max(0, 100 - pct - virtual);
+  const remainingReal = Math.max(0, 100 - pct);
+  const virtualTotal = Math.max(0, Math.min(100, pct + virtual));
 
   card.innerHTML = `
     <h3>${title}</h3>
     <div class="pieRow" style="margin-top:10px">
-      <div class="chartWrap">
-        <div id="${chartId}"></div>
-        <div class="chartCenter">
-          <div class="a">${pct}%</div>
-          <div class="b">Falta ${falt}%</div>
+      <div class="chartBlock">
+        <div class="chartWrap" style="--virtual-pct:${virtual};">
+          <div id="${chartId}" class="chartCanvas"></div>
+          <div class="chartVirtual ${virtualTotal === 0 ? "chartVirtual--hidden" : ""}">${virtualTotal}%</div>
+        </div>
+        <div class="chartMeta">
+          <span class="metaLabel">Completado:</span>
+          <span class="metaPct">${pct}%</span>
+          <span class="metaLabel">Restante:</span>
+          <span class="metaPct">${remainingReal}%</span>
         </div>
       </div>
-      <div class="kpi">
+      <div class="kpi kpi--shift">
         <div><b>${p.totalCredits}</b> / ${p.planTotal} créditos</div>
-        <div>Completadas: <b>${p.completedCredits}</b></div>
-        <div>Homologadas: <b>${p.homologatedCredits}</b></div>
       </div>
     </div>
   `;
 
-  requestAnimationFrame(() => {
-    const el = card.querySelector(`#${chartId}`);
-    charts[key] = createMinimalDonut(el, pct);
-    charts[key].render();
-  });
+    requestAnimationFrame(() => {
+      const el = card.querySelector(`#${chartId}`);
+      charts[key] = createMinimalDonut(el, pct, virtual, remainingVirtual);
+      charts[key].render();
+    });
 
   return card;
 }
@@ -2647,31 +2797,42 @@ function doubleCard(d) {
 
   const pct = d.totalUniqueCredits > 0 ? Math.round((d.doneUniqueCredits / d.totalUniqueCredits) * 100) : 0;
   const safe = Math.max(0, Math.min(100, pct));
-  const falt = 100 - safe;
+  const virtualRaw = d.totalUniqueCredits > 0
+    ? Math.round((d.inProgressUniqueCredits / d.totalUniqueCredits) * 100)
+    : 0;
+  const virtual = Math.max(0, Math.min(100 - safe, virtualRaw));
+  const remainingVirtual = Math.max(0, 100 - safe - virtual);
+  const remainingReal = Math.max(0, 100 - safe);
+  const virtualTotal = Math.max(0, Math.min(100, safe + virtual));
 
   const chartId = "chart-doble";
 
   card.innerHTML = `
     <h3>Doble (único)</h3>
     <div class="pieRow" style="margin-top:10px">
-      <div class="chartWrap">
-        <div id="${chartId}"></div>
-        <div class="chartCenter">
-          <div class="a">${safe}%</div>
-          <div class="b">Falta ${falt}%</div>
+      <div class="chartBlock">
+        <div class="chartWrap" style="--virtual-pct:${virtual};">
+          <div id="${chartId}" class="chartCanvas"></div>
+          <div class="chartVirtual ${virtualTotal === 0 ? "chartVirtual--hidden" : ""}">${virtualTotal}%</div>
+        </div>
+        <div class="chartMeta">
+          <span class="metaLabel">Completado:</span>
+          <span class="metaPct">${safe}%</span>
+          <span class="metaLabel">Restante:</span>
+          <span class="metaPct">${remainingReal}%</span>
         </div>
       </div>
-      <div class="kpi">
+      <div class="kpi kpi--shift">
         <div><b>${d.doneUniqueCredits}</b> / ${d.totalUniqueCredits} créditos</div>
       </div>
     </div>
   `;
 
-  requestAnimationFrame(() => {
-    const el = card.querySelector(`#${chartId}`);
-    charts.doble = createMinimalDonut(el, safe);
-    charts.doble.render();
-  });
+    requestAnimationFrame(() => {
+      const el = card.querySelector(`#${chartId}`);
+      charts.doble = createMinimalDonut(el, safe, virtual, remainingVirtual);
+      charts.doble.render();
+    });
 
   return card;
 }
