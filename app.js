@@ -20,6 +20,7 @@ const ctx = {
       active: false,
       draft: null,
       search: "",
+      semester: "",
     },
   },
 };
@@ -122,6 +123,21 @@ function renderShell() {
               <label class="enrollLabel" for="enrollEnd">Hora fin</label>
               <select id="enrollEnd"></select>
             </div>
+            <div class="enrollField">
+              <label class="enrollLabel" for="enrollSemesterFilter">Filtrar por semestre</label>
+              <div class="enrollSearchRow">
+                <select id="enrollSemesterFilter">
+                  <option value="">Filtrar por semestre</option>
+                  <option value="1">Semestre I</option>
+                  <option value="2">Semestre II</option>
+                  <option value="3">Semestre III</option>
+                  <option value="4">Semestre IV</option>
+                  <option value="5">Semestre V</option>
+                  <option value="6">Semestre VI</option>
+                </select>
+                <button id="enrollSemesterClear" class="btn btn--ghost enrollClear" type="button" aria-label="Quitar filtro">Quitar filtro</button>
+              </div>
+            </div>
             <div class="enrollField enrollField--grow">
               <label class="enrollLabel" for="enrollSearch">Buscar materia</label>
               <div class="enrollSearchRow">
@@ -143,7 +159,10 @@ function renderShell() {
             <div class="enrollPane">
               <div class="enrollPane__head">
                 <h3>Horario sugerido</h3>
-                <span class="chip">Sin colisiones</span>
+                <div class="enrollPane__meta">
+                  <span class="chip">Sin colisiones</span>
+                  <span id="enrollCredits" class="chip chip--accent">0 cr</span>
+                </div>
               </div>
               <div id="enrollSelected" class="enrollSelected"></div>
               <div id="enrollGrid" class="enrollGrid"></div>
@@ -287,6 +306,18 @@ function bindUI() {
     if (searchEl) searchEl.value = "";
     rerenderEnrollment(ctx);
   });
+
+  document.getElementById("enrollSemesterFilter")?.addEventListener("change", (e) => {
+    ctx.ui.enrollment.semester = e.target.value;
+    rerenderEnrollment(ctx);
+  });
+
+  document.getElementById("enrollSemesterClear")?.addEventListener("click", () => {
+    ctx.ui.enrollment.semester = "";
+    const selectEl = document.getElementById("enrollSemesterFilter");
+    if (selectEl) selectEl.value = "";
+    rerenderEnrollment(ctx);
+  });
 }
 
 function rerenderAll() {
@@ -380,6 +411,8 @@ function rerenderEnrollment(ctx) {
 
   const searchEl = document.getElementById("enrollSearch");
   if (searchEl) searchEl.value = ctx.ui.enrollment.search;
+  const semesterEl = document.getElementById("enrollSemesterFilter");
+  if (semesterEl) semesterEl.value = ctx.ui.enrollment.semester || "";
 
   sanitizeEnrollmentDraft(ctx, draft);
 
@@ -473,6 +506,8 @@ function renderEnrollmentSelected(ctx, draft) {
   if (!selectedEl) return;
   selectedEl.innerHTML = "";
 
+  renderEnrollmentCredits(ctx, draft);
+
   const selectedKeys = Object.keys(draft.selected ?? {});
   if (selectedKeys.length === 0) {
     const empty = document.createElement("div");
@@ -488,11 +523,13 @@ function renderEnrollmentSelected(ctx, draft) {
       const fallback = document.createElement("div");
       fallback.className = "enrollChip";
       fallback.innerHTML = `
-        <div class="enrollChip__title">${escapeHTML(key)}</div>
+        <div class="enrollChip__titleRow">
+          <div class="enrollChip__title">${escapeHTML(key)}</div>
+          <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+        </div>
         <div class="enrollChip__meta">Materia sin datos de horario.</div>
-        <button class="iconbtn" data-key="${escapeHTML(key)}" aria-label="Quitar">Quitar</button>
       `;
-      fallback.querySelector("button")?.addEventListener("click", () => {
+      fallback.querySelector(".trashBtn")?.addEventListener("click", () => {
         delete draft.selected[key];
         rerenderEnrollment(ctx);
       });
@@ -505,16 +542,39 @@ function renderEnrollmentSelected(ctx, draft) {
     const chip = document.createElement("div");
     chip.className = "enrollChip";
     chip.innerHTML = `
-      <div class="enrollChip__title">${escapeHTML(course.name)}</div>
+      <div class="enrollChip__titleRow">
+        <div class="enrollChip__title">${escapeHTML(course.name)}</div>
+        <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+      </div>
       <div class="enrollChip__meta">${escapeHTML(formatOptionLabel(option))}</div>
-      <button class="iconbtn" data-key="${escapeHTML(key)}" aria-label="Quitar">Quitar</button>
     `;
-    chip.querySelector("button")?.addEventListener("click", () => {
+    chip.querySelector(".trashBtn")?.addEventListener("click", () => {
       delete draft.selected[key];
       rerenderEnrollment(ctx);
     });
     selectedEl.appendChild(chip);
   }
+}
+
+function renderEnrollmentCredits(ctx, draft) {
+  const el = document.getElementById("enrollCredits");
+  if (!el) return;
+  const total = computeSelectedCredits(ctx, draft);
+  el.textContent = `${total} cr`;
+}
+
+function computeSelectedCredits(ctx, draft) {
+  let sum = 0;
+  for (const key of Object.keys(draft.selected ?? {})) {
+    const course = ctx.enroll?.courses?.[key];
+    if (!course?.courseId) continue;
+    const cr =
+      ctx.derived.contaCredits?.[course.courseId] ??
+      ctx.derived.adminCredits?.[course.courseId] ??
+      0;
+    sum += cr;
+  }
+  return sum;
 }
 
 function renderEnrollmentSuggestions(ctx, draft) {
@@ -592,36 +652,72 @@ function renderEnrollmentGrid(ctx, draft) {
     return;
   }
 
-  const header = document.createElement("div");
-  header.className = "enrollGrid__row enrollGrid__head";
-  header.innerHTML = `<div class="enrollGrid__time">Hora</div>${days.map(d => `<div class="enrollGrid__day">${d}</div>`).join("")}`;
-  gridEl.appendChild(header);
-
   const selectedSessions = getSelectedSessions(ctx, draft);
 
-  for (const slot of slots) {
-    const row = document.createElement("div");
-    row.className = "enrollGrid__row";
-    row.innerHTML = `<div class="enrollGrid__time">${escapeHTML(slot.label)}</div>`;
+  const occupancy = {};
+  for (const day of days) occupancy[day] = Array(slots.length).fill("");
+
+  selectedSessions.forEach((s) => {
+    if (!occupancy[s.day]) return;
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      if (s.startMin < slot.endMin && s.endMin > slot.startMin) {
+        occupancy[s.day][i] = s.name;
+      }
+    }
+  });
+
+  const table = document.createElement("table");
+  table.className = "enrollTable";
+
+  const thead = document.createElement("thead");
+  thead.innerHTML = `<tr><th class="enrollGrid__time">Hora</th>${days.map(d => `<th class="enrollGrid__day">${d}</th>`).join("")}</tr>`;
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const skip = {};
+  for (const d of days) skip[d] = 0;
+
+  for (let i = 0; i < slots.length; i++) {
+    const tr = document.createElement("tr");
+    const timeTd = document.createElement("td");
+    timeTd.className = "enrollGrid__time";
+    timeTd.textContent = slots[i].label;
+    tr.appendChild(timeTd);
 
     for (const day of days) {
-      const cell = document.createElement("div");
-      cell.className = "enrollGrid__cell";
-
-      const matches = selectedSessions.filter(s =>
-        s.day === day && s.startMin < slot.endMin && s.endMin > slot.startMin
-      );
-      for (const m of matches) {
+      if (skip[day] > 0) {
+        skip[day] -= 1;
+        continue;
+      }
+      const name = occupancy[day][i];
+      if (name) {
+        let span = 1;
+        for (let j = i + 1; j < slots.length; j++) {
+          if (occupancy[day][j] === name) span += 1;
+          else break;
+        }
+        const td = document.createElement("td");
+        td.className = "enrollGrid__cell enrollGrid__cell--filled";
+        td.rowSpan = span;
         const pill = document.createElement("div");
         pill.className = "enrollPill";
-        pill.textContent = m.name;
-        cell.appendChild(pill);
+        pill.textContent = name;
+        td.appendChild(pill);
+        tr.appendChild(td);
+        skip[day] = span - 1;
+      } else {
+        const td = document.createElement("td");
+        td.className = "enrollGrid__cell";
+        tr.appendChild(td);
       }
-      row.appendChild(cell);
     }
 
-    gridEl.appendChild(row);
+    tbody.appendChild(tr);
   }
+
+  table.appendChild(tbody);
+  gridEl.appendChild(table);
 }
 
 function computeEnrollmentAvailable(ctx, draft) {
@@ -629,6 +725,7 @@ function computeEnrollmentAvailable(ctx, draft) {
   const endMin = parseTimeToMinutes(draft.preferences.end);
   const search = ctx.ui.enrollment.search;
   const searchActive = search.length >= 4;
+  const semesterFilter = ctx.ui.enrollment.semester;
 
   const selectedKeys = new Set(Object.keys(draft.selected ?? {}));
   const occupied = getSelectedSessions(ctx, draft);
@@ -642,6 +739,10 @@ function computeEnrollmentAvailable(ctx, draft) {
 
     if (course.courseId && isSatisfied(ctx.state, course.courseId)) continue;
     if (course.courseId && !isEnrollmentEligible(ctx, course.courseId, selectedCourseIds)) continue;
+    if (semesterFilter) {
+      const sem = getEnrollmentSemesterValue(ctx, course);
+      if (String(sem) !== String(semesterFilter)) continue;
+    }
 
     const labelHaystack = `${course.name} ${course.alias ?? ""}`.toLowerCase();
     if (searchActive && !labelHaystack.includes(search)) continue;
@@ -772,17 +873,27 @@ function formatOptionLabel(option) {
 }
 
 function getEnrollmentSemesterRoman(ctx, course) {
-  const courseId = course?.courseId;
-  if (!courseId) return "";
-  const sem = ctx.derived.contaDefaultSem?.[courseId];
+  const sem = getEnrollmentSemesterValue(ctx, course);
   if (!sem) return "";
   return toRoman(sem);
+}
+
+function getEnrollmentSemesterValue(ctx, course) {
+  const courseId = course?.courseId;
+  if (!courseId) return "";
+  return (
+    ctx.derived.contaDefaultSem?.[courseId] ??
+    ctx.derived.adminDefaultSem?.[courseId] ??
+    ""
+  );
 }
 
 function getEnrollmentCredits(ctx, course) {
   const courseId = course?.courseId;
   if (!courseId) return "";
-  const cr = ctx.derived.contaCredits?.[courseId];
+  const cr =
+    ctx.derived.contaCredits?.[courseId] ??
+    ctx.derived.adminCredits?.[courseId];
   return Number.isFinite(cr) ? String(cr) : "";
 }
 

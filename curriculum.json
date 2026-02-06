@@ -67,7 +67,7 @@
     "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES": { "code": "SIS-302", "name": "Software y Contabilización de Soportes", "aliases": ["Software y Soportes"] },
 
     "IVA_Y_RETENCION_EN_LA_FUENTE": { "code": "TAX-401", "name": "IVA y Retención en la Fuente", "aliases": ["IVA, Retefuente e ICA"] },
-    "IMPUESTO_RENTA_Y_COMPLEMENTARIOS": { "code": "TAX-501", "name": "Impuesto Renta y Complementarios", "aliases": ["Impuesto de Renta y Complementarios y CREE", "Renta y CREE"] },
+    "IMPUESTO_RENTA_Y_COMPLEMENTARIOS": { "code": "TAX-501", "name": "Impuesto Renta y Complementarios", "aliases": ["Impuesto de Renta y Complementarios y CREE", "Renta y CREE", "Impuesto de Renta y CREE"] },
     "PROCEDIMIENTO_TRIBUTARIO": { "code": "TAX-502", "name": "Procedimiento Tributario", "aliases": [] },
     "GESTION_TRIBUTARIA": { "code": "TAX-601", "name": "Gestión Tributaria", "aliases": [] },
 
@@ -91,7 +91,7 @@
     "ADMINISTRACION_DE_LA_PRODUCCION": { "code": "PROD-301", "name": "Administración de la Producción", "aliases": [] },
     "FUNDAMENTOS_DE_MERCADEO": { "code": "MKT-301", "name": "Fundamentos de Mercadeo", "aliases": [] },
     "INVESTIGACION_DE_MERCADOS": { "code": "MKT-401", "name": "Investigación de Mercados", "aliases": [] },
-    "PSICOLOGIA_EN_LAS_ORGANIZACIONES": { "code": "PSY-401", "name": "Psicología en las Organizaciones", "aliases": ["Psicolgía en las Organizaciones"] },
+    "PSICOLOGIA_EN_LAS_ORGANIZACIONES": { "code": "PSY-401", "name": "Psicología en las Organizaciones", "aliases": ["Psicolgía en las Organizaciones", "Psicología de las Organizaciones"] },
 
     "DIRECCION_Y_CONTROL": { "code": "MGT-401", "name": "Dirección y Control", "aliases": [] },
     "ENFOQUE_GERENCIAL": { "code": "MGT-601", "name": "Enfoque Gerencial", "aliases": [] },

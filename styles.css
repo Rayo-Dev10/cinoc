@@ -10,17 +10,17 @@ html[data-theme="light"]{
   --panel2:#f7f9ff;
 
   --text:#0b1220;
-  --muted:#4b5563;
+  --muted:#374151;
 
-  --stroke:rgba(15, 23, 42, .14);
+  --stroke:rgba(15, 23, 42, .18);
   --shadow: 0 16px 40px rgba(15,23,42,.10);
 
-  --chip:#eef2ff;
+  --chip:#e5ecff;
 
   --accent-green:#16a34a;
   --accent-blue:#2563eb;
-  --warn:#b45309;
-  --bad:#dc2626;
+  --warn:#92400e;
+  --bad:#b91c1c;
 
   --royal-blue:#1d4ed8;
   --bone:#f7f2e7;
@@ -39,18 +39,18 @@ html[data-theme="dark"]{
   --panel:#0f1628;
   --panel2:#0b1020;
 
-  --text:#eaf0ff;
-  --muted:#aeb8d4;
+  --text:#eef2ff;
+  --muted:#c2cbe0;
 
-  --stroke:rgba(255,255,255,.12);
+  --stroke:rgba(255,255,255,.18);
   --shadow: 0 14px 40px rgba(0,0,0,.45);
 
-  --chip:#161f39;
+  --chip:#1b2648;
 
   --accent-green:#37d67a;
   --accent-blue:#5aa8ff;
-  --warn:#ffcc00;
-  --bad:#ff5c7a;
+  --warn:#fcd34d;
+  --bad:#ff6b85;
 
   --royal-blue:#1d4ed8;
   --bone:#f7f2e7;
@@ -219,11 +219,14 @@ body.enroll-active .enrollPanel{ display:block; }
 
 .enrollControls{
   display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap:12px;
   margin-top:12px;
 }
-@media (max-width: 900px){
+@media (max-width: 1100px){
+  .enrollControls{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px){
   .enrollControls{ grid-template-columns: 1fr; }
 }
 
@@ -265,6 +268,17 @@ body.enroll-active .enrollPanel{ display:block; }
   justify-content:space-between;
   gap:10px;
   margin-bottom:10px;
+}
+.enrollPane__meta{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.chip--accent{
+  color:var(--accent-blue);
+  border-color:rgba(37,99,235,.3);
 }
 
 .enrollSuggestions{
@@ -321,8 +335,8 @@ html[data-theme="dark"] .enrollCard{ background:rgba(255,255,255,.03); }
 }
 
 .enrollChip{
-  display:grid;
-  grid-template-columns: 1fr auto;
+  display:flex;
+  flex-direction:column;
   gap:8px;
   align-items:center;
   padding:8px 10px;
@@ -331,26 +345,71 @@ html[data-theme="dark"] .enrollCard{ background:rgba(255,255,255,.03); }
   background:rgba(0,0,0,.02);
 }
 html[data-theme="dark"] .enrollChip{ background:rgba(255,255,255,.04); }
+.enrollChip__titleRow{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
 .enrollChip__title{ font-weight:850; }
 .enrollChip__meta{ color:var(--muted); font-size:.85rem; }
 
+.trashBtn{
+  width:22px;
+  height:22px;
+  border:1px solid rgba(220,38,38,.35);
+  border-radius:8px;
+  background:rgba(220,38,38,.12);
+  cursor:pointer;
+  position:relative;
+  flex:0 0 auto;
+}
+.trashBtn::before{
+  content:"";
+  position:absolute;
+  inset:4px 7px 6px;
+  border:2px solid #dc2626;
+  border-top:0;
+  border-radius:2px 2px 3px 3px;
+}
+.trashBtn::after{
+  content:"";
+  position:absolute;
+  top:4px;
+  left:6px;
+  right:6px;
+  height:2px;
+  background:#dc2626;
+  border-radius:2px;
+}
+.trashBtn:hover{
+  background:rgba(220,38,38,.18);
+}
+html[data-theme="dark"] .trashBtn{
+  border-color: rgba(255,107,133,.55);
+  background: rgba(255,107,133,.16);
+}
+html[data-theme="dark"] .trashBtn::before{
+  border-color: #ff6b85;
+}
+html[data-theme="dark"] .trashBtn::after{
+  background:#ff6b85;
+}
+
 .enrollGrid{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
   overflow:auto;
 }
 
-.enrollGrid__row{
-  display:grid;
-  grid-template-columns: 120px repeat(5, minmax(0, 1fr));
-  gap:6px;
-  align-items:stretch;
+.enrollTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:6px;
 }
-@media (max-width: 900px){
-  .enrollGrid__row{ grid-template-columns: 90px repeat(5, minmax(0, 1fr)); }
+.enrollTable th,
+.enrollTable td{
+  vertical-align:top;
 }
-
 .enrollGrid__head{
   font-weight:800;
 }
@@ -373,12 +432,16 @@ html[data-theme="dark"] .enrollGrid__day{
   border:1px dashed var(--stroke);
   background:rgba(0,0,0,.01);
   padding:6px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  justify-content:center;
+}
+.enrollGrid__cell--filled{
+  background:rgba(37,99,235,.08);
+  border:1px solid rgba(37,99,235,.25);
 }
 html[data-theme="dark"] .enrollGrid__cell{ background:rgba(255,255,255,.02); }
+html[data-theme="dark"] .enrollGrid__cell--filled{
+  background:rgba(90,168,255,.22);
+  border:1px solid rgba(90,168,255,.45);
+}
 
 .enrollPill{
   padding:6px 8px;
@@ -387,6 +450,9 @@ html[data-theme="dark"] .enrollGrid__cell{ background:rgba(255,255,255,.02); }
   color:var(--text);
   font-weight:700;
   font-size:.85rem;
+}
+html[data-theme="dark"] .enrollPill{
+  background:rgba(90,168,255,.28);
 }
 
 .enrollEmpty{
@@ -404,7 +470,7 @@ html[data-theme="dark"] .enrollEmpty{ background:rgba(255,255,255,.03); }
   padding:8px 10px;
   border-radius:10px;
   border:1px solid var(--stroke);
-  background:rgba(0,0,0,.02);
+  background:rgba(0,0,0,.03);
 }
 html[data-theme="dark"] .enrollHint{ background:rgba(255,255,255,.03); }
 
@@ -674,7 +740,7 @@ html[data-theme="dark"] .course:hover{ background:rgba(255,255,255,.07); }
 
 .chip{
   font-size:.78rem;
-  color:var(--muted);
+  color:var(--text);
   background:var(--chip);
   border:1px solid var(--stroke);
   border-radius:999px;
