@@ -21,6 +21,7 @@ const ctx = {
       draft: null,
       search: "",
       semester: "",
+      minimized: false,
       auto: {
         limitMode: "unlimited",
         maxCredits: 24,
@@ -107,6 +108,13 @@ function renderShell() {
       </header>
 
       <main class="container">
+        <div id="enrollMiniTab" class="enrollMiniTab is-hidden">
+          <button id="enrollMaximizeBtn" class="btn btn--ghost" type="button" title="Maximizar">
+            Inscripción
+            <span class="enrollMiniIcon">▣</span>
+          </button>
+        </div>
+
         <section id="enrollPanel" class="section enrollPanel is-hidden">
           <div class="section__head">
             <div>
@@ -114,8 +122,8 @@ function renderShell() {
               <p class="kpiSmall">Elige horarios sin colisiones usando las ofertas del semestre.</p>
             </div>
             <div class="enrollActions">
-              <button id="enrollSaveBtn" class="btn">Guardar</button>
-              <button id="enrollCancelBtn" class="btn btn--ghost">Abandonar</button>
+              <button id="enrollMinimizeBtn" class="iconbtn enrollWinBtn" type="button" title="Minimizar">—</button>
+              <button id="enrollCloseBtn" class="iconbtn enrollWinBtn enrollWinBtn--close" type="button" title="Cerrar">×</button>
             </div>
           </div>
 
@@ -173,6 +181,10 @@ function renderShell() {
               <div id="enrollSelected" class="enrollSelected"></div>
               <div id="enrollGrid" class="enrollGrid"></div>
             </div>
+          </div>
+          <div class="enrollFooter">
+            <button id="enrollSaveBtn" class="btn">Guardar</button>
+            <button id="enrollCancelBtn" class="btn btn--ghost">Abandonar</button>
           </div>
         </section>
 
@@ -349,6 +361,11 @@ function bindUI() {
     closeEnrollmentMode(ctx);
     toast("Inscripción descartada.");
   });
+  document.getElementById("enrollCloseBtn")?.addEventListener("click", () => {
+    discardEnrollmentDraft(ctx);
+    closeEnrollmentMode(ctx);
+    toast("Inscripción descartada.");
+  });
 
   document.getElementById("enrollStart")?.addEventListener("change", () => {
     onEnrollmentTimeChanged(ctx);
@@ -365,6 +382,17 @@ function bindUI() {
     ctx.ui.enrollment.search = "";
     const searchEl = document.getElementById("enrollSearch");
     if (searchEl) searchEl.value = "";
+    rerenderEnrollment(ctx);
+  });
+
+  document.getElementById("enrollMinimizeBtn")?.addEventListener("click", () => {
+    ctx.ui.enrollment.minimized = true;
+    document.body.classList.add("enroll-minimized");
+    rerenderEnrollment(ctx);
+  });
+  document.getElementById("enrollMaximizeBtn")?.addEventListener("click", () => {
+    ctx.ui.enrollment.minimized = false;
+    document.body.classList.remove("enroll-minimized");
     rerenderEnrollment(ctx);
   });
 
@@ -441,17 +469,21 @@ function rerenderBoard() {
 
 function openEnrollmentMode(ctx) {
   ctx.ui.enrollment.active = true;
+  ctx.ui.enrollment.minimized = false;
   ctx.ui.enrollment.search = "";
   ensureEnrollmentDraft(ctx);
   document.body.classList.add("enroll-active");
+  document.body.classList.remove("enroll-minimized");
   rerenderEnrollment(ctx);
 }
 
 function closeEnrollmentMode(ctx) {
   ctx.ui.enrollment.active = false;
+  ctx.ui.enrollment.minimized = false;
   ctx.ui.enrollment.search = "";
   ctx.ui.enrollment.draft = null;
   document.body.classList.remove("enroll-active");
+  document.body.classList.remove("enroll-minimized");
   rerenderEnrollment(ctx);
 }
 
@@ -495,14 +527,23 @@ function onEnrollmentTimeChanged(ctx) {
 
 function rerenderEnrollment(ctx) {
   const panel = document.getElementById("enrollPanel");
+  const mini = document.getElementById("enrollMiniTab");
   if (!panel) return;
 
   if (!ctx.ui.enrollment.active) {
     panel.classList.add("is-hidden");
+    mini?.classList.add("is-hidden");
+    return;
+  }
+
+  if (ctx.ui.enrollment.minimized) {
+    panel.classList.add("is-hidden");
+    mini?.classList.remove("is-hidden");
     return;
   }
 
   panel.classList.remove("is-hidden");
+  mini?.classList.add("is-hidden");
   const draft = ensureEnrollmentDraft(ctx);
   syncEnrollmentControls(ctx, draft);
 

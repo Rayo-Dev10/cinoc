@@ -200,8 +200,11 @@ html[data-theme="dark"] .section{ background:rgba(255,255,255,.03); }
 
 .is-hidden{ display:none; }
 
-body.enroll-active .section--main{ display:none; }
-body.enroll-active .enrollPanel{ display:block; }
+body.enroll-active:not(.enroll-minimized) .section--main{ display:none; }
+body.enroll-active:not(.enroll-minimized) .enrollPanel{ display:block; }
+body.enroll-active.enroll-minimized .section--main{ display:block; }
+body.enroll-active.enroll-minimized .enrollPanel{ display:none; }
+body.enroll-active.enroll-minimized .enrollMiniTab{ display:block; }
 
 /* =========================
    MODO INSCRIPCION
@@ -209,12 +212,41 @@ body.enroll-active .enrollPanel{ display:block; }
 
 .enrollPanel{
   display:none;
+  position:relative;
+}
+
+.enrollMiniTab{
+  display:none;
+  margin:10px 0 0;
+  padding:6px 0;
+}
+.enrollMiniTab .btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.enrollMiniIcon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:20px;
+  height:20px;
+  border-radius:6px;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.02);
+  font-weight:900;
+}
+html[data-theme="dark"] .enrollMiniIcon{
+  background:rgba(255,255,255,.06);
 }
 
 .enrollActions{
   display:flex;
-  gap:8px;
-  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+  position:absolute;
+  top:0;
+  right:0;
 }
 
 .enrollControls{
@@ -1095,3 +1127,26 @@ html[data-theme="dark"] .coin::after{
 }
 
 
+.enrollWinBtn{
+  width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  line-height:1;
+  border-radius:8px;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.enrollWinBtn--close{
+  color:var(--bad);
+}
+
+.enrollFooter{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:12px;
+}
