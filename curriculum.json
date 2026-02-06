@@ -34,7 +34,8 @@
       "principios deEconomía": "principios de economía",
       "psicolgía en las organizaciones": "psicología en las organizaciones",
       "emprenderísmo": "emprenderismo",
-      "iva, retefuente e ica": "iva y retención en la fuente"
+      "iva, retefuente e ica": "iva y retención en la fuente",
+      "sistemas": "sistemas aplicados"
     }
   },
   "course_catalog": {
@@ -62,15 +63,15 @@
     "TALENTO_HUMANO": { "code": "HR-301", "name": "Talento Humano", "aliases": [] },
 
     "SISTEMAS": { "code": "SIS-201", "name": "Sistemas", "aliases": [] },
-    "SISTEMAS_APLICADOS": { "code": "SIS-301", "name": "Sistemas Aplicados", "aliases": [] },
-    "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES": { "code": "SIS-302", "name": "Software y Contabilización de Soportes", "aliases": [] },
+    "SISTEMAS_APLICADOS": { "code": "SIS-301", "name": "Sistemas Aplicados", "aliases": ["Propedéutica Sistemas Aplicados", "Sistemas"] },
+    "SOFTWARE_Y_CONTABILIZACION_DE_SOPORTES": { "code": "SIS-302", "name": "Software y Contabilización de Soportes", "aliases": ["Software y Soportes"] },
 
     "IVA_Y_RETENCION_EN_LA_FUENTE": { "code": "TAX-401", "name": "IVA y Retención en la Fuente", "aliases": ["IVA, Retefuente e ICA"] },
-    "IMPUESTO_RENTA_Y_COMPLEMENTARIOS": { "code": "TAX-501", "name": "Impuesto Renta y Complementarios", "aliases": [] },
+    "IMPUESTO_RENTA_Y_COMPLEMENTARIOS": { "code": "TAX-501", "name": "Impuesto Renta y Complementarios", "aliases": ["Impuesto de Renta y Complementarios y CREE", "Renta y CREE"] },
     "PROCEDIMIENTO_TRIBUTARIO": { "code": "TAX-502", "name": "Procedimiento Tributario", "aliases": [] },
     "GESTION_TRIBUTARIA": { "code": "TAX-601", "name": "Gestión Tributaria", "aliases": [] },
 
-    "CICLO_CONTABLE_I": { "code": "ACC-501", "name": "Ciclo Contable I", "aliases": [] },
+    "CICLO_CONTABLE_I": { "code": "ACC-501", "name": "Ciclo Contable I", "aliases": ["Ciclo Contable y Tributario I"] },
     "CICLO_CONTABLE_II_E_IMPUESTOS_TERRITORIALES": { "code": "ACC-502", "name": "Ciclo Contable II e Impuestos Territoriales", "aliases": [] },
     "CONTABILIDAD_PATRIMONIAL": { "code": "ACC-301", "name": "Contabilidad Patrimonial", "aliases": [] },
     "CONTABILIDAD_PUBLICA": { "code": "ACC-601", "name": "Contabilidad Pública", "aliases": [] },
@@ -79,7 +80,7 @@
     "PRINCIPIOS_DE_INVESTIGACION": { "code": "RES-101", "name": "Principios de Investigación", "aliases": [] },
     "METODOLOGIA_DE_LA_INVESTIGACION": { "code": "RES-201", "name": "Metodología de la Investigación", "aliases": [] },
 
-    "TECNICAS_DE_EXPRESION_ORAL_Y_ESCRITA": { "code": "COM-101", "name": "Técnicas de Expresión Oral y Escrita", "aliases": [] },
+    "TECNICAS_DE_EXPRESION_ORAL_Y_ESCRITA": { "code": "COM-101", "name": "Técnicas de Expresión Oral y Escrita", "aliases": ["Expresión Oral y Escrita"] },
     "CONSTITUCION_POLITICA_Y_ETICA": { "code": "CIV-101", "name": "Constitución Política y Ética", "aliases": [] },
 
     "INGLES_I": { "code": "ENG-101", "name": "Inglés I", "aliases": ["Ingles I"] },
@@ -99,14 +100,14 @@
     "FORMULACION_Y_EVALUACION_DE_PROYECTOS": { "code": "PROJ-601", "name": "Formulación y Evaluación de Proyectos", "aliases": [] },
     "EVALUACION_FINANCIERA_DE_PROYECTOS": { "code": "PROJ-502", "name": "Evaluación Financiera de Proyectos", "aliases": [] },
 
-    "INTRODUCCION_A_LAS_CIENCIAS_SOCIALES": { "code": "SOC-101", "name": "Introducción a las Ciencias Sociales", "aliases": [] },
+    "INTRODUCCION_A_LAS_CIENCIAS_SOCIALES": { "code": "SOC-101", "name": "Introducción a las Ciencias Sociales", "aliases": ["Ciencias Sociales"] },
     "CONTEXTO_REGIONAL": { "code": "CTX-201", "name": "Contexto Regional", "aliases": [] },
 
     "EMPRENDERISMO": { "code": "ENT-301", "name": "Emprenderismo", "aliases": ["Emprenderísmo"] },
     "EMPRENDIMIENTO": { "code": "ENT-401", "name": "Emprendimiento", "aliases": [] },
 
     "ELECTIVA_SLOT_CONT_1": { "code": "ELEC-CONT-1", "name": "Electiva I (slot)", "type": "elective_slot" },
-    "ELECTIVA_SLOT_CONT_2": { "code": "ELEC-CONT-2", "name": "Electiva II (slot)", "type": "elective_slot" },
+    "ELECTIVA_SLOT_CONT_2": { "code": "ELEC-CONT-2", "name": "Electiva II (slot)", "type": "elective_slot", "aliases": ["Electiva II Contabilidad de Economía Solidaria", "Electiva II (Economía Solidaria)"] },
     "ELECTIVA_SLOT_CONT_3": { "code": "ELEC-CONT-3", "name": "Electiva III (slot)", "type": "elective_slot" },
 
     "ELECTIVA_SLOT_ADM_1": { "code": "ELEC-ADM-1", "name": "Electiva (slot) - Sem I", "type": "elective_slot" },

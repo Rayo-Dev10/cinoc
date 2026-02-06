@@ -9,11 +9,18 @@ const PROGRAMS = {
 
 const ctx = {
   curriculum: null,
+  horarios: null,
   derived: null,
+  enroll: null,
   state: null,
   ui: {
     filter: "all",
     search: "",
+    enrollment: {
+      active: false,
+      draft: null,
+      search: "",
+    },
   },
 };
 
@@ -39,8 +46,18 @@ async function init() {
     return;
   }
 
+  try {
+    ctx.horarios = await fetchJSON("./horarios2026A.json");
+  } catch (err) {
+    console.error(err);
+    toast("No se pudo cargar horarios2026A.json.");
+    ctx.horarios = { s: {}, m: {} };
+  }
+
   ctx.derived = buildDerived(ctx.curriculum);
-  ctx.state = loadState(STORAGE_KEY) ?? createDefaultState(ctx.derived);
+  ctx.enroll = buildEnrollmentDerived(ctx.curriculum, ctx.horarios);
+  ctx.state = loadState(STORAGE_KEY) ?? createDefaultState(ctx.derived, ctx.enroll);
+  ensureEnrollmentState(ctx);
 
   bindUI();
   rerenderAll();
@@ -72,6 +89,7 @@ function renderShell() {
           </div>
 
           <div class="btnrow">
+            <button id="enrollModeBtn" class="btn">Modo Inscripción</button>
             <button id="exportBtn" class="btn btn--ghost">Exportar</button>
             <label class="btn btn--ghost" style="display:inline-flex; gap:8px; align-items:center; cursor:pointer;">
               Importar
@@ -83,14 +101,64 @@ function renderShell() {
       </header>
 
       <main class="container">
-        <section class="section">
+        <section id="enrollPanel" class="section enrollPanel is-hidden">
+          <div class="section__head">
+            <div>
+              <h2>Modo Inscripción</h2>
+              <p class="kpiSmall">Elige horarios sin colisiones usando las ofertas del semestre.</p>
+            </div>
+            <div class="enrollActions">
+              <button id="enrollSaveBtn" class="btn">Guardar</button>
+              <button id="enrollCancelBtn" class="btn btn--ghost">Abandonar</button>
+            </div>
+          </div>
+
+          <div class="enrollControls">
+            <div class="enrollField">
+              <label class="enrollLabel" for="enrollStart">Hora inicio</label>
+              <select id="enrollStart"></select>
+            </div>
+            <div class="enrollField">
+              <label class="enrollLabel" for="enrollEnd">Hora fin</label>
+              <select id="enrollEnd"></select>
+            </div>
+            <div class="enrollField enrollField--grow">
+              <label class="enrollLabel" for="enrollSearch">Buscar materia</label>
+              <div class="enrollSearchRow">
+                <input id="enrollSearch" class="search" type="text" placeholder="Buscar materia disponible..." />
+                <button id="enrollSearchClear" class="btn btn--ghost enrollClear" type="button" aria-label="Limpiar búsqueda">Limpiar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="enrollLayout">
+            <div class="enrollPane">
+              <div class="enrollPane__head">
+                <h3>Materias disponibles</h3>
+                <span id="enrollCount" class="chip">0</span>
+              </div>
+              <div id="enrollSuggestions" class="enrollSuggestions"></div>
+            </div>
+
+            <div class="enrollPane">
+              <div class="enrollPane__head">
+                <h3>Horario sugerido</h3>
+                <span class="chip">Sin colisiones</span>
+              </div>
+              <div id="enrollSelected" class="enrollSelected"></div>
+              <div id="enrollGrid" class="enrollGrid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--main">
           <div class="section__head">
             <h2>Avance</h2>
           </div>
           <div id="stats" class="stats"></div>
         </section>
 
-        <section class="section">
+        <section class="section section--main">
           <div class="section__head">
             <h2>Semestres</h2>
           </div>
@@ -179,16 +247,52 @@ function bindUI() {
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => {
-    ctx.state = createDefaultState(ctx.derived);
+    ctx.state = createDefaultState(ctx.derived, ctx.enroll);
     saveState(STORAGE_KEY, ctx.state);
     toast("Progreso reiniciado.");
     rerenderAll();
+  });
+
+  const enrollBtn = document.getElementById("enrollModeBtn");
+  enrollBtn?.addEventListener("click", () => {
+    openEnrollmentMode(ctx);
+  });
+
+  document.getElementById("enrollSaveBtn")?.addEventListener("click", () => {
+    saveEnrollmentDraft(ctx);
+    closeEnrollmentMode(ctx);
+    toast("Inscripción guardada.");
+  });
+
+  document.getElementById("enrollCancelBtn")?.addEventListener("click", () => {
+    discardEnrollmentDraft(ctx);
+    closeEnrollmentMode(ctx);
+    toast("Inscripción descartada.");
+  });
+
+  document.getElementById("enrollStart")?.addEventListener("change", () => {
+    onEnrollmentTimeChanged(ctx);
+  });
+  document.getElementById("enrollEnd")?.addEventListener("change", () => {
+    onEnrollmentTimeChanged(ctx);
+  });
+  document.getElementById("enrollSearch")?.addEventListener("input", (e) => {
+    ctx.ui.enrollment.search = e.target.value.trim().toLowerCase();
+    rerenderEnrollment(ctx);
+  });
+
+  document.getElementById("enrollSearchClear")?.addEventListener("click", () => {
+    ctx.ui.enrollment.search = "";
+    const searchEl = document.getElementById("enrollSearch");
+    if (searchEl) searchEl.value = "";
+    rerenderEnrollment(ctx);
   });
 }
 
 function rerenderAll() {
   rerenderStats();
   rerenderBoard();
+  rerenderEnrollment(ctx);
 }
 
 function rerenderStats() {
@@ -205,6 +309,502 @@ function rerenderBoard() {
     onSoftRerenderBoard: () => rerenderBoard(),
     onHardRerenderAll: () => rerenderAll(),
   });
+}
+
+function openEnrollmentMode(ctx) {
+  ctx.ui.enrollment.active = true;
+  ctx.ui.enrollment.search = "";
+  ensureEnrollmentDraft(ctx);
+  document.body.classList.add("enroll-active");
+  rerenderEnrollment(ctx);
+}
+
+function closeEnrollmentMode(ctx) {
+  ctx.ui.enrollment.active = false;
+  ctx.ui.enrollment.search = "";
+  ctx.ui.enrollment.draft = null;
+  document.body.classList.remove("enroll-active");
+  rerenderEnrollment(ctx);
+}
+
+function ensureEnrollmentDraft(ctx) {
+  if (!ctx.ui.enrollment.draft) {
+    const base = ctx.state.enrollment ?? createDefaultEnrollmentState(ctx.enroll);
+    ctx.ui.enrollment.draft = JSON.parse(JSON.stringify(base));
+  }
+  return ctx.ui.enrollment.draft;
+}
+
+function saveEnrollmentDraft(ctx) {
+  const draft = ensureEnrollmentDraft(ctx);
+  ctx.state.enrollment = JSON.parse(JSON.stringify(draft));
+  saveState(STORAGE_KEY, ctx.state);
+}
+
+function discardEnrollmentDraft(ctx) {
+  ctx.ui.enrollment.draft = null;
+}
+
+function onEnrollmentTimeChanged(ctx) {
+  const draft = ensureEnrollmentDraft(ctx);
+  const startEl = document.getElementById("enrollStart");
+  const endEl = document.getElementById("enrollEnd");
+  if (!startEl || !endEl) return;
+
+  draft.preferences.start = startEl.value;
+  draft.preferences.end = endEl.value;
+
+  const startMin = parseTimeToMinutes(draft.preferences.start);
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+  if (Number.isFinite(startMin) && Number.isFinite(endMin) && startMin > endMin) {
+    draft.preferences.end = draft.preferences.start;
+    endEl.value = draft.preferences.end;
+  }
+
+  sanitizeEnrollmentDraft(ctx, draft);
+  rerenderEnrollment(ctx);
+}
+
+function rerenderEnrollment(ctx) {
+  const panel = document.getElementById("enrollPanel");
+  if (!panel) return;
+
+  if (!ctx.ui.enrollment.active) {
+    panel.classList.add("is-hidden");
+    return;
+  }
+
+  panel.classList.remove("is-hidden");
+  const draft = ensureEnrollmentDraft(ctx);
+  syncEnrollmentControls(ctx, draft);
+
+  const searchEl = document.getElementById("enrollSearch");
+  if (searchEl) searchEl.value = ctx.ui.enrollment.search;
+
+  sanitizeEnrollmentDraft(ctx, draft);
+
+  renderEnrollmentSelected(ctx, draft);
+  renderEnrollmentSuggestions(ctx, draft);
+  renderEnrollmentGrid(ctx, draft);
+}
+
+function syncEnrollmentControls(ctx, draft) {
+  const startEl = document.getElementById("enrollStart");
+  const endEl = document.getElementById("enrollEnd");
+  if (!startEl || !endEl) return;
+
+  const opts = ctx.enroll?.timeOptions ?? [];
+  if (startEl.options.length !== opts.length) {
+    startEl.innerHTML = "";
+    endEl.innerHTML = "";
+    for (const opt of opts) {
+      const o1 = document.createElement("option");
+      o1.value = opt.label;
+      o1.textContent = opt.label;
+      startEl.appendChild(o1);
+
+      const o2 = document.createElement("option");
+      o2.value = opt.label;
+      o2.textContent = opt.label;
+      endEl.appendChild(o2);
+    }
+  }
+
+  const labels = new Set(opts.map(o => o.label));
+  if (!labels.has(draft.preferences.start) && opts.length > 0) draft.preferences.start = opts[0].label;
+  if (!labels.has(draft.preferences.end) && opts.length > 0) draft.preferences.end = opts[opts.length - 1].label;
+
+  startEl.value = draft.preferences.start;
+  endEl.value = draft.preferences.end;
+}
+
+function sanitizeEnrollmentDraft(ctx, draft) {
+  const baseOrder = ctx.enroll?.order ?? [];
+  const selectedKeys = Object.keys(draft.selected ?? {});
+  const order = [...baseOrder, ...selectedKeys.filter(k => !baseOrder.includes(k))];
+  const nextSelected = {};
+  const occupied = [];
+  let removed = 0;
+  const startMin = parseTimeToMinutes(draft.preferences.start);
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+
+  for (const key of order) {
+    const optionIndex = draft.selected?.[key];
+    if (optionIndex == null) continue;
+    const course = ctx.enroll?.courses?.[key];
+    const option = course?.options?.[optionIndex];
+    if (!option || !optionWithinRange(option, startMin, endMin)) {
+      removed += 1;
+      continue;
+    }
+    if (optionHasCollision(option, occupied)) {
+      removed += 1;
+      continue;
+    }
+    nextSelected[key] = optionIndex;
+    for (const session of option) occupied.push(session);
+  }
+
+  draft.selected = nextSelected;
+  return removed;
+}
+
+function optionWithinRange(option, startMin, endMin) {
+  if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return true;
+  return option.every((s) => s.startMin >= startMin && s.endMin <= endMin);
+}
+
+function optionHasCollision(option, occupied) {
+  for (const session of option) {
+    for (const taken of occupied) {
+      if (sessionsOverlap(session, taken)) return true;
+    }
+  }
+  return false;
+}
+
+function sessionsOverlap(a, b) {
+  if (a.day !== b.day) return false;
+  return a.startMin < b.endMin && b.startMin < a.endMin;
+}
+
+function renderEnrollmentSelected(ctx, draft) {
+  const selectedEl = document.getElementById("enrollSelected");
+  if (!selectedEl) return;
+  selectedEl.innerHTML = "";
+
+  const selectedKeys = Object.keys(draft.selected ?? {});
+  if (selectedKeys.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "enrollEmpty";
+    empty.textContent = "Aun no has inscrito materias.";
+    selectedEl.appendChild(empty);
+    return;
+  }
+
+  for (const key of selectedKeys) {
+    const course = ctx.enroll?.courses?.[key];
+    if (!course) {
+      const fallback = document.createElement("div");
+      fallback.className = "enrollChip";
+      fallback.innerHTML = `
+        <div class="enrollChip__title">${escapeHTML(key)}</div>
+        <div class="enrollChip__meta">Materia sin datos de horario.</div>
+        <button class="iconbtn" data-key="${escapeHTML(key)}" aria-label="Quitar">Quitar</button>
+      `;
+      fallback.querySelector("button")?.addEventListener("click", () => {
+        delete draft.selected[key];
+        rerenderEnrollment(ctx);
+      });
+      selectedEl.appendChild(fallback);
+      continue;
+    }
+    const optionIndex = draft.selected[key];
+    const option = course.options?.[optionIndex] ?? [];
+
+    const chip = document.createElement("div");
+    chip.className = "enrollChip";
+    chip.innerHTML = `
+      <div class="enrollChip__title">${escapeHTML(course.name)}</div>
+      <div class="enrollChip__meta">${escapeHTML(formatOptionLabel(option))}</div>
+      <button class="iconbtn" data-key="${escapeHTML(key)}" aria-label="Quitar">Quitar</button>
+    `;
+    chip.querySelector("button")?.addEventListener("click", () => {
+      delete draft.selected[key];
+      rerenderEnrollment(ctx);
+    });
+    selectedEl.appendChild(chip);
+  }
+}
+
+function renderEnrollmentSuggestions(ctx, draft) {
+  const listEl = document.getElementById("enrollSuggestions");
+  const countEl = document.getElementById("enrollCount");
+  if (!listEl) return;
+  listEl.innerHTML = "";
+
+  const available = computeEnrollmentAvailable(ctx, draft);
+  if (countEl) countEl.textContent = String(available.length);
+
+  const search = ctx.ui.enrollment.search;
+  if (search.length > 0 && search.length < 4) {
+    const hint = document.createElement("div");
+    hint.className = "enrollHint";
+    hint.textContent = "Escribe al menos 4 letras para filtrar por coincidencias.";
+    listEl.appendChild(hint);
+  }
+
+  if (available.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "enrollEmpty";
+    empty.textContent = "No hay materias compatibles con el rango y sin colisiones.";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  for (const course of available) {
+    const roman = getEnrollmentSemesterRoman(ctx, course);
+    const credits = getEnrollmentCredits(ctx, course);
+    const card = document.createElement("div");
+    card.className = "enrollCard";
+    card.innerHTML = `
+      <div class="enrollCard__head">
+        <div>
+          <div class="enrollCard__title">${escapeHTML(course.name)}${roman ? ` <span class="enrollRoman">(${roman})${credits ? ` (${credits})` : ""}</span>` : ""}</div>
+          ${course.alias ? `<div class="kpiSmall">${escapeHTML(course.alias)}</div>` : ""}
+        </div>
+        ${course.courseId ? "" : `<span class="chip warn">Fuera del currÃ­culo</span>`}
+      </div>
+      <div class="enrollCard__options"></div>
+    `;
+    const optsEl = card.querySelector(".enrollCard__options");
+    for (const opt of course.options) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn--ghost enrollOption";
+      btn.textContent = formatOptionLabel(opt.sessions);
+      btn.addEventListener("click", () => {
+        draft.selected[course.key] = opt.index;
+        ctx.ui.enrollment.search = "";
+        rerenderEnrollment(ctx);
+      });
+      optsEl.appendChild(btn);
+    }
+    listEl.appendChild(card);
+  }
+}
+
+function renderEnrollmentGrid(ctx, draft) {
+  const gridEl = document.getElementById("enrollGrid");
+  if (!gridEl) return;
+  gridEl.innerHTML = "";
+
+  const days = ["Lun", "Mar", "Mie", "Jue", "Vie"];
+  const startMin = parseTimeToMinutes(draft.preferences.start);
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+  const slots = computeEnrollmentTimeSlots(ctx, startMin, endMin);
+
+  if (slots.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "enrollEmpty";
+    empty.textContent = "No hay bloques en este rango.";
+    gridEl.appendChild(empty);
+    return;
+  }
+
+  const header = document.createElement("div");
+  header.className = "enrollGrid__row enrollGrid__head";
+  header.innerHTML = `<div class="enrollGrid__time">Hora</div>${days.map(d => `<div class="enrollGrid__day">${d}</div>`).join("")}`;
+  gridEl.appendChild(header);
+
+  const selectedSessions = getSelectedSessions(ctx, draft);
+
+  for (const slot of slots) {
+    const row = document.createElement("div");
+    row.className = "enrollGrid__row";
+    row.innerHTML = `<div class="enrollGrid__time">${escapeHTML(slot.label)}</div>`;
+
+    for (const day of days) {
+      const cell = document.createElement("div");
+      cell.className = "enrollGrid__cell";
+
+      const matches = selectedSessions.filter(s =>
+        s.day === day && s.startMin < slot.endMin && s.endMin > slot.startMin
+      );
+      for (const m of matches) {
+        const pill = document.createElement("div");
+        pill.className = "enrollPill";
+        pill.textContent = m.name;
+        cell.appendChild(pill);
+      }
+      row.appendChild(cell);
+    }
+
+    gridEl.appendChild(row);
+  }
+}
+
+function computeEnrollmentAvailable(ctx, draft) {
+  const startMin = parseTimeToMinutes(draft.preferences.start);
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+  const search = ctx.ui.enrollment.search;
+  const searchActive = search.length >= 4;
+
+  const selectedKeys = new Set(Object.keys(draft.selected ?? {}));
+  const occupied = getSelectedSessions(ctx, draft);
+  const selectedCourseIds = getSelectedCourseIdsFromDraft(ctx, draft);
+  const available = [];
+
+  for (const key of ctx.enroll?.order ?? []) {
+    if (selectedKeys.has(key)) continue;
+    const course = ctx.enroll?.courses?.[key];
+    if (!course) continue;
+
+    if (course.courseId && isSatisfied(ctx.state, course.courseId)) continue;
+    if (course.courseId && !isEnrollmentEligible(ctx, course.courseId, selectedCourseIds)) continue;
+
+    const labelHaystack = `${course.name} ${course.alias ?? ""}`.toLowerCase();
+    if (searchActive && !labelHaystack.includes(search)) continue;
+
+    const options = [];
+    (course.options ?? []).forEach((option, index) => {
+      if (!optionWithinRange(option, startMin, endMin)) return;
+      if (optionHasCollision(option, occupied)) return;
+      options.push({ index, sessions: option });
+    });
+
+    if (options.length > 0) {
+      available.push({ ...course, options });
+    }
+  }
+
+  return available;
+}
+
+function isEnrollmentEligible(ctx, courseId, selectedCourseIds) {
+  const inAdmin = ctx.derived.adminSet.has(courseId);
+  const inConta = ctx.derived.contaSet.has(courseId);
+  if (!inAdmin && !inConta) return true;
+
+  if (inAdmin) {
+    const gate = computeEnrollmentGate(ctx, PROGRAMS.ADMIN, courseId, selectedCourseIds);
+    if (gate.locked) return false;
+  }
+
+  if (inConta) {
+    const gate = computeEnrollmentGate(ctx, PROGRAMS.CONTA, courseId, selectedCourseIds);
+    if (gate.locked) return false;
+  }
+
+  return true;
+}
+
+function computeEnrollmentGate(ctx, programId, courseId, selectedCourseIds) {
+  if (isSatisfied(ctx.state, courseId)) {
+    return { locked: false, missing: { prereq: [], coreq: [] }, rule: null };
+  }
+
+  const rule = ctx.derived.reqIndex[programId].get(courseId);
+  if (!rule) return { locked: false, missing: { prereq: [], coreq: [] }, rule: null };
+
+  const prereqMissing = evalRequirementGroupEnrollment(ctx, rule.prereq, true, selectedCourseIds);
+  const coreqMissing = evalRequirementGroupEnrollment(ctx, rule.coreq, false, selectedCourseIds);
+  const locked = prereqMissing.length > 0 || coreqMissing.length > 0;
+
+  return { locked, missing: { prereq: prereqMissing, coreq: coreqMissing }, rule };
+}
+
+function evalRequirementGroupEnrollment(ctx, group, isPrereq, selectedCourseIds) {
+  const g = group || {};
+  const allOf = Array.isArray(g.allOf) ? g.allOf : [];
+  const anyOf = Array.isArray(g.anyOf) ? g.anyOf : [];
+  const missing = [];
+
+  for (const cid of allOf) {
+    if (!satisfiesEnrollmentReq(ctx, cid, isPrereq, selectedCourseIds)) {
+      missing.push({ type: "allOf", course_id: cid });
+    }
+  }
+
+  if (anyOf.length > 0) {
+    const ok = anyOf.some(cid => satisfiesEnrollmentReq(ctx, cid, isPrereq, selectedCourseIds));
+    if (!ok) {
+      for (const cid of anyOf) missing.push({ type: "anyOf", course_id: cid });
+    }
+  }
+
+  return missing;
+}
+
+function satisfiesEnrollmentReq(ctx, reqCourseId, isPrereq, selectedCourseIds) {
+  if (isSatisfied(ctx.state, reqCourseId)) return true;
+  if (!isPrereq && selectedCourseIds.has(reqCourseId)) return true;
+  return false;
+}
+
+function getSelectedCourseIdsFromDraft(ctx, draft) {
+  const ids = new Set();
+  for (const [key] of Object.entries(draft.selected ?? {})) {
+    const course = ctx.enroll?.courses?.[key];
+    if (course?.courseId) ids.add(course.courseId);
+  }
+  return ids;
+}
+
+function getSelectedSessions(ctx, draft) {
+  const out = [];
+  for (const [key, optionIndex] of Object.entries(draft.selected ?? {})) {
+    const course = ctx.enroll?.courses?.[key];
+    const option = course?.options?.[optionIndex];
+    if (!course || !option) continue;
+    for (const session of option) {
+      out.push({
+        day: session.day,
+        startMin: session.startMin,
+        endMin: session.endMin,
+        name: course.name,
+        key,
+      });
+    }
+  }
+  return out;
+}
+
+function computeEnrollmentTimeSlots(ctx, startMin, endMin) {
+  const points = (ctx.enroll?.timeOptions ?? []).map(t => t.minutes);
+  const sorted = [...points].sort((a, b) => a - b);
+  const slots = [];
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i];
+    const b = sorted[i + 1];
+    if (Number.isFinite(startMin) && a < startMin) continue;
+    if (Number.isFinite(endMin) && b > endMin) continue;
+    slots.push({ startMin: a, endMin: b, label: `${formatMinutes(a)} - ${formatMinutes(b)}` });
+  }
+
+  return slots;
+}
+
+function formatOptionLabel(option) {
+  if (!option?.length) return "Horario";
+  return option.map((s) => `${s.day} ${s.start} - ${s.end}`).join(" / ");
+}
+
+function getEnrollmentSemesterRoman(ctx, course) {
+  const courseId = course?.courseId;
+  if (!courseId) return "";
+  const sem = ctx.derived.contaDefaultSem?.[courseId];
+  if (!sem) return "";
+  return toRoman(sem);
+}
+
+function getEnrollmentCredits(ctx, course) {
+  const courseId = course?.courseId;
+  if (!courseId) return "";
+  const cr = ctx.derived.contaCredits?.[courseId];
+  return Number.isFinite(cr) ? String(cr) : "";
+}
+
+function toRoman(value) {
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const map = [
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
+  let num = n;
+  let out = "";
+  for (const [v, r] of map) {
+    while (num >= v) {
+      out += r;
+      num -= v;
+    }
+  }
+  return out;
 }
 
 function registerServiceWorker() {
@@ -360,6 +960,125 @@ function buildDerived(curr) {
     coreqAdj,
   };
 }
+
+function buildEnrollmentDerived(curr, horarios) {
+  const courseNameIndex = buildCourseNameIndex(curr);
+  const aliasMap = buildKnownAliasMap(curr);
+  const courses = {};
+  const order = [];
+  const timePoints = new Set();
+
+  const addCourseOrder = (key) => {
+    if (!order.includes(key)) order.push(key);
+  };
+
+  const semOrder = Object.keys(horarios?.s ?? {}).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+  for (const sem of semOrder) {
+    const list = horarios.s?.[sem] ?? [];
+    for (const key of list) addCourseOrder(key);
+  }
+
+  for (const key of Object.keys(horarios?.m ?? {})) {
+    const item = horarios.m[key];
+    if (!order.includes(key)) order.push(key);
+
+    const courseId = matchScheduleCourseId(curr, item, courseNameIndex, aliasMap);
+    const options = (item.op ?? []).map((sessions) => sessions.map((slot) => {
+      const [day, start, end] = slot;
+      const startMin = parseTimeToMinutes(start);
+      const endMin = parseTimeToMinutes(end);
+      if (Number.isFinite(startMin)) timePoints.add(startMin);
+      if (Number.isFinite(endMin)) timePoints.add(endMin);
+      return { day, start, end, startMin, endMin };
+    }));
+
+    courses[key] = {
+      key,
+      name: item.n ?? key,
+      alias: item.a ?? "",
+      courseId,
+      options,
+    };
+  }
+
+  const timeOptions = [...timePoints]
+    .filter((t) => Number.isFinite(t))
+    .sort((a, b) => a - b)
+    .map((min) => ({ minutes: min, label: formatMinutes(min) }));
+
+  return { courses, order, timeOptions };
+}
+
+function buildCourseNameIndex(curr) {
+  const index = new Map();
+  const catalog = curr.course_catalog ?? {};
+
+  for (const [courseId, info] of Object.entries(catalog)) {
+    const names = [info.name, ...(info.aliases ?? [])].filter(Boolean);
+    for (const name of names) {
+      const canon = normalizeName(curr, name);
+      if (!index.has(canon)) index.set(canon, courseId);
+    }
+  }
+
+  return index;
+}
+
+function buildKnownAliasMap(curr) {
+  const out = new Map();
+  const known = curr.canonicalization?.known_aliases ?? {};
+  for (const [k, v] of Object.entries(known)) {
+    const key = normalizeName(curr, k);
+    const val = normalizeName(curr, v);
+    if (key && val) out.set(key, val);
+  }
+  return out;
+}
+
+function matchScheduleCourseId(curr, item, courseNameIndex, aliasMap) {
+  const names = [item?.n, item?.a].filter(Boolean);
+  for (const raw of names) {
+    let canon = normalizeName(curr, raw);
+    if (aliasMap.has(canon)) canon = aliasMap.get(canon);
+    const courseId = courseNameIndex.get(canon);
+    if (courseId) return courseId;
+  }
+  return null;
+}
+
+function normalizeName(curr, value) {
+  let s = String(value ?? "");
+  if (curr.canonicalization?.strip_accents) {
+    s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+  if (curr.canonicalization?.lowercase) s = s.toLowerCase();
+  s = s.replace(/[^a-z0-9]+/gi, " ");
+  if (curr.canonicalization?.collapse_whitespace) s = s.replace(/\s+/g, " ");
+  if (curr.canonicalization?.trim) s = s.trim();
+  return s;
+}
+
+function parseTimeToMinutes(value) {
+  if (!value) return NaN;
+  const m = String(value).match(/(\d{1,2}):(\d{2})\s*([AP]M)/i);
+  if (!m) return NaN;
+  let hh = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const mer = m[3].toUpperCase();
+  if (mer === "PM" && hh !== 12) hh += 12;
+  if (mer === "AM" && hh === 12) hh = 0;
+  return hh * 60 + mm;
+}
+
+function formatMinutes(minutes) {
+  const hh24 = Math.floor(minutes / 60);
+  const mm = minutes % 60;
+  const mer = hh24 >= 12 ? "PM" : "AM";
+  let hh = hh24 % 12;
+  if (hh === 0) hh = 12;
+  return `${hh}:${String(mm).padStart(2, "0")} ${mer}`;
+}
+
 function indexRules(rules) {
   const map = new Map();
   for (const r of rules) map.set(r.target, r);
@@ -402,7 +1121,7 @@ function saveState(storageKey, state) {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
-function createDefaultState(derived) {
+function createDefaultState(derived, enroll) {
   const commonPlacement = {};
   for (const cid of derived.commonSet) {
     const a = derived.adminDefaultSem[cid];
@@ -424,8 +1143,50 @@ function createDefaultState(derived) {
       common: commonPlacement,
       [PROGRAMS.ADMIN]: adminPlacement,
       [PROGRAMS.CONTA]: contaPlacement,
-    }
+    },
+    enrollment: createDefaultEnrollmentState(enroll),
   };
+}
+
+function createDefaultEnrollmentState(enroll) {
+  const defaults = {
+    version: 1,
+    preferences: {
+      start: "6:15 PM",
+      end: "10:15 PM",
+    },
+    selected: {},
+  };
+
+  if (!enroll?.timeOptions?.length) return defaults;
+
+  const first = enroll.timeOptions[0];
+  const last = enroll.timeOptions[enroll.timeOptions.length - 1];
+  return {
+    version: 1,
+    preferences: {
+      start: first.label,
+      end: last.label,
+    },
+    selected: {},
+  };
+}
+
+function ensureEnrollmentState(ctx) {
+  if (!ctx.state.enrollment || ctx.state.enrollment.version !== 1) {
+    ctx.state.enrollment = createDefaultEnrollmentState(ctx.enroll);
+    saveState(STORAGE_KEY, ctx.state);
+    return;
+  }
+
+  const prefs = ctx.state.enrollment.preferences ?? {};
+  if (!prefs.start || !prefs.end) {
+    ctx.state.enrollment = {
+      ...ctx.state.enrollment,
+      preferences: createDefaultEnrollmentState(ctx.enroll).preferences,
+    };
+    saveState(STORAGE_KEY, ctx.state);
+  }
 }
 
 function minSem(a, b) {

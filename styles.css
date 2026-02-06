@@ -198,6 +198,216 @@ html[data-theme="dark"] #themeToggle{ background:rgba(255,255,255,.10); }
 }
 html[data-theme="dark"] .section{ background:rgba(255,255,255,.03); }
 
+.is-hidden{ display:none; }
+
+body.enroll-active .section--main{ display:none; }
+body.enroll-active .enrollPanel{ display:block; }
+
+/* =========================
+   MODO INSCRIPCION
+========================= */
+
+.enrollPanel{
+  display:none;
+}
+
+.enrollActions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.enrollControls{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:12px;
+  margin-top:12px;
+}
+@media (max-width: 900px){
+  .enrollControls{ grid-template-columns: 1fr; }
+}
+
+.enrollField{ display:flex; flex-direction:column; gap:6px; }
+.enrollField--grow{ grid-column: span 1; }
+.enrollLabel{ font-size:.85rem; color:var(--muted); }
+
+.enrollSearchRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.enrollClear{
+  padding:10px 12px;
+  white-space:nowrap;
+}
+
+.enrollLayout{
+  display:grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.4fr);
+  gap:14px;
+  margin-top:14px;
+}
+@media (max-width: 1100px){
+  .enrollLayout{ grid-template-columns: 1fr; }
+}
+
+.enrollPane{
+  border:1px solid var(--stroke);
+  border-radius:16px;
+  background:linear-gradient(180deg, var(--panel), var(--panel2));
+  box-shadow: var(--shadow);
+  padding:12px;
+}
+
+.enrollPane__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.enrollSuggestions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height:520px;
+  overflow:auto;
+  padding-right:4px;
+}
+
+.enrollCard{
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  padding:10px;
+  background:rgba(0,0,0,.02);
+}
+html[data-theme="dark"] .enrollCard{ background:rgba(255,255,255,.03); }
+
+.enrollCard__head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.enrollCard__title{
+  font-weight:900;
+}
+
+.enrollRoman{
+  font-weight:800;
+  color:var(--muted);
+  font-size:.85rem;
+}
+
+.enrollCard__options{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.enrollOption{
+  text-align:left;
+  justify-content:flex-start;
+}
+
+.enrollSelected{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.enrollChip{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.02);
+}
+html[data-theme="dark"] .enrollChip{ background:rgba(255,255,255,.04); }
+.enrollChip__title{ font-weight:850; }
+.enrollChip__meta{ color:var(--muted); font-size:.85rem; }
+
+.enrollGrid{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  overflow:auto;
+}
+
+.enrollGrid__row{
+  display:grid;
+  grid-template-columns: 120px repeat(5, minmax(0, 1fr));
+  gap:6px;
+  align-items:stretch;
+}
+@media (max-width: 900px){
+  .enrollGrid__row{ grid-template-columns: 90px repeat(5, minmax(0, 1fr)); }
+}
+
+.enrollGrid__head{
+  font-weight:800;
+}
+
+.enrollGrid__time,
+.enrollGrid__day{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.02);
+}
+html[data-theme="dark"] .enrollGrid__time,
+html[data-theme="dark"] .enrollGrid__day{
+  background:rgba(255,255,255,.04);
+}
+
+.enrollGrid__cell{
+  min-height:46px;
+  border-radius:10px;
+  border:1px dashed var(--stroke);
+  background:rgba(0,0,0,.01);
+  padding:6px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  justify-content:center;
+}
+html[data-theme="dark"] .enrollGrid__cell{ background:rgba(255,255,255,.02); }
+
+.enrollPill{
+  padding:6px 8px;
+  border-radius:10px;
+  background:rgba(37,99,235,.12);
+  color:var(--text);
+  font-weight:700;
+  font-size:.85rem;
+}
+
+.enrollEmpty{
+  color:var(--muted);
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px dashed var(--stroke);
+  background:rgba(0,0,0,.02);
+}
+html[data-theme="dark"] .enrollEmpty{ background:rgba(255,255,255,.03); }
+
+.enrollHint{
+  color:var(--muted);
+  font-size:.85rem;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.02);
+}
+html[data-theme="dark"] .enrollHint{ background:rgba(255,255,255,.03); }
+
 .section__head{
   display:flex;
   justify-content:space-between;
