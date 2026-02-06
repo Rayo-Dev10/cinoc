@@ -21,6 +21,10 @@ const ctx = {
       draft: null,
       search: "",
       semester: "",
+      auto: {
+        limitMode: "unlimited",
+        maxCredits: 24,
+      },
     },
   },
 };
@@ -162,6 +166,7 @@ function renderShell() {
                 <div class="enrollPane__meta">
                   <span class="chip">Sin colisiones</span>
                   <span id="enrollCredits" class="chip chip--accent">0 cr</span>
+                  <button id="enrollSuggestBtn" class="btn btn--ghost" type="button">Sugerencia automática</button>
                 </div>
               </div>
               <div id="enrollSelected" class="enrollSelected"></div>
@@ -191,6 +196,58 @@ function renderShell() {
           <div id="semesterBoard" class="semesterBoard"></div>
         </section>
       </main>
+    `;
+  }
+
+  const suggestModal = document.getElementById("suggestModal");
+  if (suggestModal) {
+    suggestModal.innerHTML = `
+      <div class="modal__card">
+        <div class="modal__head">
+          <div>
+            <h3>Sugerencia automática</h3>
+            <p class="kpiSmall">Configura la estrategia y restricciones.</p>
+          </div>
+          <button id="suggestClose" class="iconbtn" aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="modal__body">
+          <div class="card">
+            <h4 style="margin:0 0 8px 0">Estrategia</h4>
+            <div class="suggestOptions">
+              <button class="btn suggestOption" data-strategy="asc" type="button">Menor → Mayor semestre</button>
+              <button class="btn suggestOption" data-strategy="desc" type="button">Mayor → Menor semestre</button>
+              <button class="btn suggestOption" data-strategy="any" type="button">Sin ordenar por semestre</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 style="margin:0 0 8px 0">Límite de créditos</h4>
+            <div class="suggestLimit">
+              <label class="suggestRadio">
+                <input type="radio" name="limitMode" value="unlimited" />
+                Sin límite
+              </label>
+              <label class="suggestRadio">
+                <input type="radio" name="limitMode" value="limited" />
+                Con límite
+              </label>
+              <input id="suggestMaxCredits" type="number" min="1" max="150" step="1" />
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 style="margin:0 0 8px 0">Fijar y excluir</h4>
+            <div id="suggestLocks" class="suggestLocks"></div>
+            <p class="kpiSmall">Fijadas siempre se incluyen si no colisionan. Excluidas nunca se sugieren.</p>
+          </div>
+        </div>
+
+        <div class="modal__foot">
+          <button id="suggestApply" class="btn">Aplicar sugerencia</button>
+          <button id="suggestCancel" class="btn btn--ghost">Cerrar</button>
+        </div>
+      </div>
     `;
   }
 
@@ -317,6 +374,37 @@ function bindUI() {
     const selectEl = document.getElementById("enrollSemesterFilter");
     if (selectEl) selectEl.value = "";
     rerenderEnrollment(ctx);
+  });
+
+  const suggestBtn = document.getElementById("enrollSuggestBtn");
+  suggestBtn?.addEventListener("click", () => openSuggestModal(ctx));
+
+  document.getElementById("suggestClose")?.addEventListener("click", () => closeSuggestModal());
+  document.getElementById("suggestCancel")?.addEventListener("click", () => closeSuggestModal());
+
+  document.querySelectorAll(".suggestOption").forEach(btn => {
+    btn.addEventListener("click", () => {
+      setSuggestStrategy(ctx, btn.dataset.strategy);
+    });
+  });
+
+  document.querySelectorAll("input[name='limitMode']").forEach(radio => {
+    radio.addEventListener("change", () => {
+      ctx.ui.enrollment.auto.limitMode = radio.value;
+      syncSuggestModal(ctx);
+    });
+  });
+
+  document.getElementById("suggestMaxCredits")?.addEventListener("input", (e) => {
+    const v = Math.max(1, Math.min(150, parseInt(e.target.value || "0", 10) || 0));
+    ctx.ui.enrollment.auto.maxCredits = v;
+    e.target.value = v ? String(v) : "";
+  });
+
+  document.getElementById("suggestApply")?.addEventListener("click", () => {
+    const strategy = ctx.ui.enrollment.auto.strategy || "asc";
+    runAutoSuggestion(ctx, strategy);
+    closeSuggestModal();
   });
 }
 
@@ -525,7 +613,9 @@ function renderEnrollmentSelected(ctx, draft) {
       fallback.innerHTML = `
         <div class="enrollChip__titleRow">
           <div class="enrollChip__title">${escapeHTML(key)}</div>
-          <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+          <div class="enrollChip__actions">
+            <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+          </div>
         </div>
         <div class="enrollChip__meta">Materia sin datos de horario.</div>
       `;
@@ -544,7 +634,9 @@ function renderEnrollmentSelected(ctx, draft) {
     chip.innerHTML = `
       <div class="enrollChip__titleRow">
         <div class="enrollChip__title">${escapeHTML(course.name)}</div>
-        <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+        <div class="enrollChip__actions">
+          <button class="trashBtn" data-key="${escapeHTML(key)}" aria-label="Quitar"></button>
+        </div>
       </div>
       <div class="enrollChip__meta">${escapeHTML(formatOptionLabel(option))}</div>
     `;
@@ -872,6 +964,291 @@ function formatOptionLabel(option) {
   return option.map((s) => `${s.day} ${s.start} - ${s.end}`).join(" / ");
 }
 
+function runAutoSuggestion(ctx, strategy) {
+  const draft = ensureEnrollmentDraft(ctx);
+  draft.selected = {};
+
+  syncStartTimeForFixedOptions(ctx, draft);
+  const startMin = parseTimeToMinutes(draft.preferences.start);
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+
+  const candidates = buildSuggestionCandidates(ctx, strategy);
+  const occupied = [];
+  const selectedCourseIds = new Set();
+  const fixedKeys = new Set(ctx.state?.enrollment?.auto?.fixed ?? []);
+  const excludedKeys = new Set(ctx.state?.enrollment?.auto?.excluded ?? []);
+  const fixedOptions = ctx.state?.enrollment?.auto?.fixedOptions ?? {};
+  const limitMode = ctx.ui.enrollment.auto.limitMode;
+  const maxCredits = clampCredits(ctx.ui.enrollment.auto.maxCredits);
+  let credits = 0;
+  let added = 0;
+
+  for (const course of candidates) {
+    if (!fixedKeys.has(course.key)) continue;
+    if (excludedKeys.has(course.key)) continue;
+    if (course.courseId && isSatisfied(ctx.state, course.courseId)) continue;
+    if (course.courseId && !isEnrollmentEligible(ctx, course.courseId, selectedCourseIds)) continue;
+    const fixedIndex = fixedOptions?.[course.key];
+    const opt = fixedIndex != null
+      ? pickFixedOption(course.options ?? [], fixedIndex, startMin, endMin, occupied)
+      : pickBestOption(course.options ?? [], startMin, endMin, occupied);
+    if (!opt) continue;
+    const cr = getEnrollmentCreditsValue(ctx, course);
+    if (limitMode === "limited" && credits + cr > maxCredits) continue;
+    draft.selected[course.key] = opt.index;
+    for (const session of opt.sessions) occupied.push(session);
+    if (course.courseId) selectedCourseIds.add(course.courseId);
+    credits += cr;
+    added += 1;
+  }
+
+  for (const course of candidates) {
+    if (fixedKeys.has(course.key)) continue;
+    if (excludedKeys.has(course.key)) continue;
+    if (course.courseId && isSatisfied(ctx.state, course.courseId)) continue;
+    if (course.courseId && !isEnrollmentEligible(ctx, course.courseId, selectedCourseIds)) continue;
+
+    const opt = pickBestOption(course.options ?? [], startMin, endMin, occupied);
+    if (!opt) continue;
+
+    const cr = getEnrollmentCreditsValue(ctx, course);
+    if (limitMode === "limited" && credits + cr > maxCredits) continue;
+
+    draft.selected[course.key] = opt.index;
+    for (const session of opt.sessions) occupied.push(session);
+    if (course.courseId) selectedCourseIds.add(course.courseId);
+    credits += cr;
+    added += 1;
+  }
+
+  rerenderEnrollment(ctx);
+  toast(`Sugerencia aplicada: ${added} materias.`);
+}
+
+function getAutoLockState(ctx, course) {
+  const key = course?.key;
+  if (!key) return "";
+  const fixed = ctx.state?.enrollment?.auto?.fixed ?? [];
+  const excluded = ctx.state?.enrollment?.auto?.excluded ?? [];
+  if (fixed.includes(key)) return "fixed";
+  if (excluded.includes(key)) return "excluded";
+  return "";
+}
+
+function setAutoLockState(ctx, course, state) {
+  const key = course?.key;
+  if (!key) return;
+  ensureEnrollmentState(ctx);
+  if (!ctx.state.enrollment.auto) {
+    ctx.state.enrollment.auto = { fixed: [], excluded: [], fixedOptions: {} };
+  }
+  const fixed = new Set(ctx.state.enrollment.auto.fixed ?? []);
+  const excluded = new Set(ctx.state.enrollment.auto.excluded ?? []);
+
+  if (state === "fixed") {
+    fixed.add(key);
+    excluded.delete(key);
+  } else if (state === "excluded") {
+    excluded.add(key);
+    fixed.delete(key);
+    delete ctx.state.enrollment.auto.fixedOptions?.[key];
+  } else {
+    fixed.delete(key);
+    excluded.delete(key);
+    delete ctx.state.enrollment.auto.fixedOptions?.[key];
+  }
+
+  ctx.state.enrollment.auto.fixed = [...fixed];
+  ctx.state.enrollment.auto.excluded = [...excluded];
+  saveState(STORAGE_KEY, ctx.state);
+}
+
+function setFixedOption(ctx, course, indexValue) {
+  const key = course?.key;
+  if (!key) return;
+  ensureEnrollmentState(ctx);
+  if (!ctx.state.enrollment.auto) {
+    ctx.state.enrollment.auto = { fixed: [], excluded: [], fixedOptions: {} };
+  }
+  if (indexValue === "" || indexValue == null) {
+    delete ctx.state.enrollment.auto.fixedOptions?.[key];
+  } else {
+    ctx.state.enrollment.auto.fixedOptions[key] = parseInt(indexValue, 10);
+  }
+  saveState(STORAGE_KEY, ctx.state);
+  if (ctx.ui.enrollment.active) {
+    const draft = ensureEnrollmentDraft(ctx);
+    syncStartTimeForFixedOptions(ctx, draft);
+    rerenderEnrollment(ctx);
+  }
+}
+
+function syncStartTimeForFixedOptions(ctx, draft) {
+  const fixed = new Set(ctx.state?.enrollment?.auto?.fixed ?? []);
+  const fixedOptions = ctx.state?.enrollment?.auto?.fixedOptions ?? {};
+  let minStart = Infinity;
+
+  for (const key of fixed) {
+    const course = ctx.enroll?.courses?.[key];
+    const optIndex = fixedOptions?.[key];
+    if (!course || optIndex == null) continue;
+    const opt = course.options?.[optIndex];
+    if (!opt) continue;
+    for (const session of opt) {
+      if (Number.isFinite(session.startMin)) {
+        minStart = Math.min(minStart, session.startMin);
+      }
+    }
+  }
+
+  if (!Number.isFinite(minStart)) return;
+  const startLabel = formatMinutes(minStart);
+  draft.preferences.start = startLabel;
+  const endMin = parseTimeToMinutes(draft.preferences.end);
+  if (Number.isFinite(endMin) && minStart > endMin) {
+    draft.preferences.end = startLabel;
+  }
+}
+
+function openSuggestModal(ctx) {
+  const modal = document.getElementById("suggestModal");
+  if (!modal) return;
+  ensureEnrollmentState(ctx);
+  if (!ctx.state.enrollment.auto) ctx.state.enrollment.auto = { fixed: [], excluded: [] };
+  if (!ctx.ui.enrollment.auto.strategy) ctx.ui.enrollment.auto.strategy = "asc";
+  if (!ctx.ui.enrollment.auto.limitMode) ctx.ui.enrollment.auto.limitMode = "unlimited";
+  if (!ctx.ui.enrollment.auto.maxCredits) ctx.ui.enrollment.auto.maxCredits = 24;
+  syncSuggestModal(ctx);
+  modal.showModal();
+}
+
+function closeSuggestModal() {
+  const modal = document.getElementById("suggestModal");
+  modal?.close();
+}
+
+function setSuggestStrategy(ctx, strategy) {
+  ctx.ui.enrollment.auto.strategy = strategy;
+  syncSuggestModal(ctx);
+}
+
+function syncSuggestModal(ctx) {
+  document.querySelectorAll(".suggestOption").forEach(btn => {
+    btn.classList.toggle("is-active", btn.dataset.strategy === ctx.ui.enrollment.auto.strategy);
+  });
+
+  const mode = ctx.ui.enrollment.auto.limitMode;
+  document.querySelectorAll("input[name='limitMode']").forEach(radio => {
+    radio.checked = radio.value === mode;
+  });
+
+  const input = document.getElementById("suggestMaxCredits");
+  if (input) {
+    const v = clampCredits(ctx.ui.enrollment.auto.maxCredits);
+    input.value = v ? String(v) : "";
+    input.disabled = mode !== "limited";
+  }
+
+  const locks = document.getElementById("suggestLocks");
+  if (locks) {
+    locks.innerHTML = "";
+    const fixed = new Set(ctx.state.enrollment.auto.fixed ?? []);
+    const excluded = new Set(ctx.state.enrollment.auto.excluded ?? []);
+    const fixedOptions = ctx.state.enrollment.auto.fixedOptions ?? {};
+    const list = (ctx.enroll?.order ?? []).map(k => ctx.enroll?.courses?.[k]).filter(Boolean);
+    for (const course of list) {
+      const row = document.createElement("div");
+      row.className = "suggestLockRow";
+      const state = fixed.has(course.key) ? "fixed" : excluded.has(course.key) ? "excluded" : "free";
+      const optionList = course.options ?? [];
+      const fixedIndex = fixedOptions?.[course.key];
+      const hasFixed = state === "fixed";
+      row.innerHTML = `
+        <div class="suggestLockTitle">${escapeHTML(course.name)}</div>
+        <div class="suggestLockChecks">
+          <label class="lockChoice lockChoice--fixed">
+            <input type="radio" name="lock-${escapeHTML(course.key)}" data-lock="fixed" ${state === "fixed" ? "checked" : ""} />
+            Fija
+          </label>
+          <label class="lockChoice lockChoice--excluded">
+            <input type="radio" name="lock-${escapeHTML(course.key)}" data-lock="excluded" ${state === "excluded" ? "checked" : ""} />
+            Excluir
+          </label>
+          <label class="lockChoice lockChoice--free">
+            <input type="radio" name="lock-${escapeHTML(course.key)}" data-lock="" ${state === "free" ? "checked" : ""} />
+            Libre
+          </label>
+        </div>
+        <div class="suggestLockSelect ${hasFixed ? "" : "is-collapsed"}">
+          <label class="kpiSmall">Opción fija</label>
+          <select data-fixed-select ${hasFixed ? "" : "disabled"}>
+            <option value="">Cualquiera</option>
+            ${optionList.map((opt, i) => `<option value="${i}" ${fixedIndex === i ? "selected" : ""}>${escapeHTML(formatOptionLabel(opt))}</option>`).join("")}
+          </select>
+        </div>
+      `;
+      row.querySelectorAll("input[type='radio']").forEach(rb => {
+        rb.addEventListener("change", () => {
+          if (!rb.checked) return;
+          const target = rb.dataset.lock || "";
+          setAutoLockState(ctx, course, target);
+          if (target !== "fixed") setFixedOption(ctx, course, "");
+          syncSuggestModal(ctx);
+        });
+      });
+      row.querySelector("select[data-fixed-select]")?.addEventListener("change", (e) => {
+        setFixedOption(ctx, course, e.target.value);
+      });
+      locks.appendChild(row);
+    }
+  }
+}
+
+function buildSuggestionCandidates(ctx, strategy) {
+  const list = (ctx.enroll?.order ?? [])
+    .map(key => ctx.enroll?.courses?.[key])
+    .filter(Boolean);
+
+  if (strategy === "any") return list;
+
+  return list.slice().sort((a, b) => {
+    const sa = parseInt(getEnrollmentSemesterValue(ctx, a) || "99", 10);
+    const sb = parseInt(getEnrollmentSemesterValue(ctx, b) || "99", 10);
+    if (strategy === "asc") return sa - sb;
+    if (strategy === "desc") return sb - sa;
+    return 0;
+  });
+}
+
+function pickBestOption(options, startMin, endMin, occupied) {
+  const viable = [];
+  for (let i = 0; i < options.length; i++) {
+    const opt = options[i];
+    if (!optionWithinRange(opt, startMin, endMin)) continue;
+    if (optionHasCollision(opt, occupied)) continue;
+    const duration = opt.reduce((sum, s) => sum + (s.endMin - s.startMin), 0);
+    const earliest = opt.reduce((min, s) => Math.min(min, s.startMin), Infinity);
+    viable.push({ index: i, sessions: opt, duration, earliest });
+  }
+
+  if (viable.length === 0) return null;
+
+  viable.sort((a, b) => {
+    if (a.duration !== b.duration) return a.duration - b.duration;
+    return a.earliest - b.earliest;
+  });
+
+  return viable[0];
+}
+
+function pickFixedOption(options, index, startMin, endMin, occupied) {
+  const opt = options?.[index];
+  if (!opt) return null;
+  if (!optionWithinRange(opt, startMin, endMin)) return null;
+  if (optionHasCollision(opt, occupied)) return null;
+  return { index, sessions: opt };
+}
+
 function getEnrollmentSemesterRoman(ctx, course) {
   const sem = getEnrollmentSemesterValue(ctx, course);
   if (!sem) return "";
@@ -895,6 +1272,22 @@ function getEnrollmentCredits(ctx, course) {
     ctx.derived.contaCredits?.[courseId] ??
     ctx.derived.adminCredits?.[courseId];
   return Number.isFinite(cr) ? String(cr) : "";
+}
+
+function getEnrollmentCreditsValue(ctx, course) {
+  const courseId = course?.courseId;
+  if (!courseId) return 0;
+  const cr =
+    ctx.derived.contaCredits?.[courseId] ??
+    ctx.derived.adminCredits?.[courseId] ??
+    0;
+  return Number.isFinite(cr) ? cr : 0;
+}
+
+function clampCredits(value) {
+  const v = parseInt(value ?? "0", 10);
+  if (!Number.isFinite(v) || v <= 0) return 0;
+  return Math.max(1, Math.min(150, v));
 }
 
 function toRoman(value) {
@@ -1266,6 +1659,11 @@ function createDefaultEnrollmentState(enroll) {
       start: "6:15 PM",
       end: "10:15 PM",
     },
+    auto: {
+      fixed: [],
+      excluded: [],
+      fixedOptions: {},
+    },
     selected: {},
   };
 
@@ -1278,6 +1676,11 @@ function createDefaultEnrollmentState(enroll) {
     preferences: {
       start: first.label,
       end: last.label,
+    },
+    auto: {
+      fixed: [],
+      excluded: [],
+      fixedOptions: {},
     },
     selected: {},
   };
@@ -1296,6 +1699,13 @@ function ensureEnrollmentState(ctx) {
       ...ctx.state.enrollment,
       preferences: createDefaultEnrollmentState(ctx.enroll).preferences,
     };
+    saveState(STORAGE_KEY, ctx.state);
+  }
+  if (!ctx.state.enrollment.auto) {
+    ctx.state.enrollment.auto = { fixed: [], excluded: [], fixedOptions: {} };
+    saveState(STORAGE_KEY, ctx.state);
+  } else if (!ctx.state.enrollment.auto.fixedOptions) {
+    ctx.state.enrollment.auto.fixedOptions = {};
     saveState(STORAGE_KEY, ctx.state);
   }
 }
